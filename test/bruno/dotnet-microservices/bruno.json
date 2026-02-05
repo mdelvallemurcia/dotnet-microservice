@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "dotnet-microservices",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/deploy/" />
+  <Folder Name="/Elementos de la solución/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/web/">
+    <Project Path="src/web/api.features/api.features.csproj" Id="fe07252f-d7fd-4917-928a-10993a277470" DisplayName="Api.Features" />
+    <Project Path="src/web/api/api.csproj" DisplayName="Api" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/integration/" />
+  <Folder Name="/tests/unit/" />
+</Solution>
