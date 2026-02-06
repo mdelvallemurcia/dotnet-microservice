@@ -1,5 +1,5 @@
-﻿using Asp.Versioning.Builder;
-using FluentValidation;
+﻿using Api.Features.Shared.Auth;
+using Asp.Versioning.Builder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -18,12 +18,11 @@ public class Handler : IEndpointModule
             .WithTags("Auth")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
-            .AddFluentValidationAutoValidation()
-            ;
+            .AddFluentValidationAutoValidation();
     }
 
-    private static async Task<IResult> Handle(Request request, IValidator<Request> validator)
+    private static async Task<IResult> Handle(Request request, IBearerTokenGenerator bearerTokenGenerator)
     {
-        return Results.Ok(new Response { Token = Guid.CreateVersion7().ToString()});
+        return Results.Ok(new Response { Token = bearerTokenGenerator.CreateToken(request.UserName)});
     }
 }

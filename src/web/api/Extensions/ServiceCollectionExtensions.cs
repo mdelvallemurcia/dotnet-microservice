@@ -1,11 +1,12 @@
-﻿using Asp.Versioning;
+﻿using Api.Features.Shared.Auth;
+using Asp.Versioning;
 
 namespace Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection ConfigureApiVersioning(this IServiceCollection services)
-        {
+    {
         services
             .AddApiVersioning(options =>
             {
@@ -19,4 +20,16 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection ConfigureBearerTokenGenerator  (this IServiceCollection services)
+    {
+        services
+            .AddOptions<BearerTokenOptions>()
+            .BindConfiguration(BearerTokenOptions.Section);
+
+        services.AddSingleton<IBearerTokenGenerator, BearerTokenGenerator>();            
+
+        return services;
+    }
+
 }

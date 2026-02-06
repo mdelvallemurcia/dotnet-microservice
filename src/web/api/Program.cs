@@ -14,11 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.ConfigureApiVersioning();
+builder.Services
+    .ConfigureApiVersioning()
+    .ConfigureBearerTokenGenerator();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>();
-//builder.Services.AddValidatorsFromAssembly(typeof(Features.Common.IEndpointModule).Assembly);
 
 //AUTH builder.Services.AddAuthentication().AddJwtBearer();
 //AUTH builder.Services.AddAuthorization(o =>
