@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 namespace Api.Features.Login.v1;
 
@@ -17,19 +18,12 @@ public class Handler : IEndpointModule
             .WithTags("Auth")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
-            
+            .AddFluentValidationAutoValidation()
             ;
     }
 
     private static async Task<IResult> Handle(Request request, IValidator<Request> validator)
     {
-        var validationResult = await validator.ValidateAsync(request);
-        if (!validationResult.IsValid)
-        {
-            // Retorna un 400 con un diccionario de errores formateado
-            return Results.ValidationProblem(validationResult.ToDictionary());
-        }
-
         return Results.Ok(new Response { Token = Guid.CreateVersion7().ToString()});
     }
 }

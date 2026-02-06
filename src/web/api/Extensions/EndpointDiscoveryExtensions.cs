@@ -1,7 +1,7 @@
 ﻿using Api.Features;
 using Asp.Versioning.Builder;
 
-namespace api.Extensions;
+namespace Api.Extensions;
 
 public static class EndpointDiscoveryExtensions
 {

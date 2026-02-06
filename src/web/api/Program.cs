@@ -1,9 +1,8 @@
-using api.Extensions;
-using Asp.Versioning;
-using Scalar.AspNetCore;
-using FluentValidation;
 using Api.Extensions;
-//using FluentValidation.DependencyInjectionExtensions;
+using Asp.Versioning;
+using FluentValidation;
+using Scalar.AspNetCore;
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +16,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.ConfigureApiVersioning();
 
-//builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>();
 //builder.Services.AddValidatorsFromAssembly(typeof(Features.Common.IEndpointModule).Assembly);
 
