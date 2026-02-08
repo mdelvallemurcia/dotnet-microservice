@@ -1,8 +1,7 @@
-﻿using Api.Extensions;
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Scalar.AspNetCore;
 
-namespace api.Extensions;
+namespace Api.Extensions;
 
 public static class WebApplicationExtensions
 {

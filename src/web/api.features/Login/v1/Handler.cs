@@ -13,8 +13,7 @@ public class Handler : IEndpointModule
     {
         app
             .MapPost("/v{version:apiVersion}/login", Handle)
-            .WithSummary("Genera un token de autenticación")
-            .WithDescription("Este endpoint genera un token de autenticación para el usuario especificado. El token se puede usar para acceder a otros endpoints protegidos de la API.")
+            .WithSummary("Generate a new Auth token")
             .WithTags("Auth")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)

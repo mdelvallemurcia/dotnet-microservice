@@ -11,7 +11,15 @@ post {
 }
 
 body:json {
-  {}
+  {
+    "UserName": "miguelito",
+    "Password": "sdlkfj298LJ!"
+  }
+}
+
+script:post-response {
+  const response = res.getBody();
+  bru.setEnvVar("auth_token", response.token);
 }
 
 settings {
