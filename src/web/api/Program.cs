@@ -13,7 +13,7 @@ builder.Services.AddOpenApi();
 builder.Services
     .ConfigureApiVersioning()
     .ConfigureBearerTokenGenerator()
-    .ConfigureAuthentication(builder.Configuration.GetSection(BearerTokenOptions.Section).Get<BearerTokenOptions>())
+    .ConfigureAuthentication(builder.Configuration.GetSection(BearerTokenOptions.Section).Get<BearerTokenOptions>()!)
     .AddAuthorization()
     .ConfigureProblemDetails()
     .AddFluentValidationAutoValidation()
@@ -31,7 +31,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.Run();
-
 
 // TODO - testing
 // TODO - worker

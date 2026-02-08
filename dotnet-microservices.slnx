@@ -5,11 +5,13 @@
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/web/">
-    <Project Path="src/web/Api.Features/api.features.csproj" Id="fe07252f-d7fd-4917-928a-10993a277470" DisplayName="Api.Features" />
+    <Project Path="src/web/Api.Features/api.features.csproj" DisplayName="Api.Features" Id="fe07252f-d7fd-4917-928a-10993a277470" />
     <Project Path="src/web/Api/api.csproj" DisplayName="Api" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/bruno/" />
   <Folder Name="/tests/integration/" />
-  <Folder Name="/tests/unit/" />
+  <Folder Name="/tests/unit/">
+    <Project Path="test/unit/Api.Features.Test.Unit/Api.Features.Test.Unit.csproj" Id="81e1441d-d8d7-40e4-9525-cbbbaf7f46e5" />
+  </Folder>
 </Solution>

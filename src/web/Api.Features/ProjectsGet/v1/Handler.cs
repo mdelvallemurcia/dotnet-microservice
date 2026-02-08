@@ -19,7 +19,7 @@ public class Handler : IEndpointModule
             .RequireAuthorization(new AuthorizeAttribute { Roles = "Reader" });
     }
 
-    private static async Task<IResult> Handle()
+    internal static async Task<IResult> Handle()
     {
         var projects = new List<Response>
         {
