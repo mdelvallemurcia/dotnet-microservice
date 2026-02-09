@@ -25,7 +25,6 @@ public class Handler_Should : ApiTestBase
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-
     [Fact]
     public async Task ReturnOk_When_TokenIsValid()
     {
