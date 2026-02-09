@@ -10,7 +10,9 @@
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/bruno/" />
-  <Folder Name="/tests/integration/" />
+  <Folder Name="/tests/integration/">
+    <Project Path="Api.Features.Test.Integration/Api.Features.Test.Integration.csproj" Id="40a46d4d-0e80-4353-8c71-5e9f24f8cff4" />
+  </Folder>
   <Folder Name="/tests/unit/">
     <Project Path="test/unit/Api.Features.Test.Unit/Api.Features.Test.Unit.csproj" Id="81e1441d-d8d7-40e4-9525-cbbbaf7f46e5" />
   </Folder>
