@@ -20,9 +20,14 @@ builder.Services
     .AddExceptionHandler<GlobalExceptionHandler>()
     .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>();
 
+builder
+    .AddServiceDefaults()
+    .AddRabbitMQClient("messaging");
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.MapDefaultEndpoints();
 app.ConfigureOpenApi();
 app.ConfigureApiVersions();
 
@@ -32,8 +37,9 @@ app.UseAuthorization();
 
 app.Run();
 
-// TODO - testing
+// TODO - testing e2e
 // TODO - worker
+// TODO healthchecks
 // Aspire?
 // RabbitMq?
 // mass transit?
