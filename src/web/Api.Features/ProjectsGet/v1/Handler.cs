@@ -13,7 +13,7 @@ public class Handler : IEndpointModule
         app
             .MapGet("/v{version:apiVersion}/projects", Handle)
             .WithSummary("Get a projects list")
-            .WithTags("Auth")
+            .WithTags("Project")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
             .RequireAuthorization(new AuthorizeAttribute { Roles = "Reader" });

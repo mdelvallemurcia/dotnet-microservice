@@ -3,12 +3,20 @@
   <Folder Name="/Elementos de la solución/">
     <File Path=".gitignore" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="readme" />
+  </Folder>
   <Folder Name="/src/" />
+  <Folder Name="/src/Common/">
+    <Project Path="Models/Models.csproj" Id="0bd8a871-8134-4723-8ee5-a7ad3741e70f" />
+  </Folder>
   <Folder Name="/src/web/">
     <Project Path="src/web/Api.Features/api.features.csproj" Id="fe07252f-d7fd-4917-928a-10993a277470" />
     <Project Path="src/web/Api/api.csproj" />
   </Folder>
-  <Folder Name="/src/worker/" />
+  <Folder Name="/src/worker/">
+    <Project Path="src/worker/Product.Consumer/ProjectSubscriber.csproj" Id="cd855d7e-25be-46cb-9735-b117584d3729" />
+  </Folder>
   <Folder Name="/src/_Aspire/">
     <Project Path="src/_aspire/Aspire.AppHost/Aspire.AppHost.csproj" Id="1edcb5e9-dbf1-4e70-b469-5f0abfbd5288" />
     <Project Path="src/_aspire/Aspire.ServiceDefaults/Aspire.ServiceDefaults.csproj" Id="8d88ef26-6eb6-4523-ac49-3505943e8146" />

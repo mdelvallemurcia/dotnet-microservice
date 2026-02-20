@@ -1,0 +1,28 @@
+meta {
+  name: Projects (Add)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{url}}/v1/project
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+body:json {
+  {
+    "Id": "{{$guid}}",
+    "CreationDate": "{{$isoTimestamp}}",
+    "Name": "My project"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

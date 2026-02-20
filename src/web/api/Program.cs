@@ -1,9 +1,9 @@
-using Api.Extensions;
 using Api.Common;
-using FluentValidation;
-using Scalar.AspNetCore;
-using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
+using Api.Extensions;
+using Api.Features.Shared;
 using Api.Features.Shared.Auth;
+using FluentValidation;
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +18,15 @@ builder.Services
     .ConfigureProblemDetails()
     .AddFluentValidationAutoValidation()
     .AddExceptionHandler<GlobalExceptionHandler>()
-    .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>();
+    .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>()
+    .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
+    .AddInternalServices();
 
 builder
     .AddServiceDefaults()
     .AddRabbitMQClient("messaging");
+
+builder.Logging.AddConsole();
 
 var app = builder.Build();
 
