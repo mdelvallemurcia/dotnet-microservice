@@ -1,11 +1,13 @@
-﻿using Api.Features.Shared;
+using api.MassTransit;
+using api.Options;
 using Api.Features.Shared.Auth;
 using Asp.Versioning;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Models.Events;
+using RabbitMQ.Client;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 
 namespace Api.Extensions;
@@ -104,37 +106,42 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection ConfigureMassTransit(this IServiceCollection services, RabbitMqOptions rabbitMqOptions)
     {
+        // Registrar el filtro de routing key
+        services.AddSingleton<RoutingKeyFilter>();
+        
         services
             .AddMassTransit(x =>
             {
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host(rabbitMqOptions.HostName, rabbitMqOptions.Port, "/", h =>
+                    cfg.Host(rabbitMqOptions.HostName, rabbitMqOptions.Port, rabbitMqOptions.Vhost, h =>
                     {
                         h.Username(rabbitMqOptions.UserName);
                         h.Password(rabbitMqOptions.Password);  
                     });
 
                     cfg.UseTimeout(c => c.Timeout = TimeSpan.FromSeconds(5));
-                    cfg.UseMessageRetry(r =>
-                    {
-                        r.Incremental(3, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
-                        //r.Ignore<InvalidOperationException>();
-                    });
-
-                    cfg.UseKillSwitch(options => options
-                        .SetActivationThreshold(10)
-                        .SetTripThreshold(0.15)
-                        .SetRestartTimeout(TimeSpan.FromSeconds(30))                       
-                        .SetTrackingPeriod(TimeSpan.FromSeconds(30))
-                    );
-
-                    cfg.MessageTopology.SetEntityNameFormatter(new EntityNameFormatter(rabbitMqOptions));
-                    cfg.PublishTopology.BrokerTopologyOptions = PublishBrokerTopologyOptions.MaintainHierarchy;
+                    
+                    cfg.MessageTopology.SetEntityNameFormatter(new EntityNameFormatter());
+                    cfg.PublishTopology.BrokerTopologyOptions = PublishBrokerTopologyOptions.FlattenHierarchy;
                     cfg.DeployPublishTopology = true;
 
-                    // Configuración automática de Exchanges y Queues
-                    cfg.ConfigureEndpoints(context);
+                    cfg.ConnectBusObserver(new BusObserver());
+
+                    cfg.Send<IEvent>(x =>
+                    {
+                        x.UseRoutingKeyFormatter(context => context.Message.GetType().FullName ?? string.Empty);                        
+                        x.UseCorrelationId(@event => @event.EventId);
+                    });
+                    
+                    // Configurar filtro de publicación a nivel del pipeline para establecer routing key
+                    cfg.UsePublishFilter<RoutingKeyFilter>(context);
+
+                    cfg.Publish<IEvent>(p =>
+                    {
+                        p.ExchangeType = ExchangeType.Topic;
+                        p.BindQueue(rabbitMqOptions.InvalidTopicQueue, "unroutable");                        
+                    });
                 });
 
             });

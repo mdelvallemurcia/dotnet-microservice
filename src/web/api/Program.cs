@@ -1,7 +1,9 @@
+using api.Options;
 using Api.Common;
 using Api.Extensions;
 using Api.Features.Shared;
 using Api.Features.Shared.Auth;
+using Aspire.ServiceDefaults;
 using FluentValidation;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 

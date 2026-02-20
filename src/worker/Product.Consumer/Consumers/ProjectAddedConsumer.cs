@@ -1,5 +1,5 @@
 ﻿using MassTransit;
-using Models.Events;
+using Models.Events.Project;
 
 namespace ProjectSubscriber.Consumers;
 
@@ -8,7 +8,7 @@ public class ProjectAddedConsumer : IConsumer<ProjectAdded>
     public async Task Consume(ConsumeContext<ProjectAdded> context)
     {
         var mensaje = context.Message;
-        Console.WriteLine($"Procesando pago del pedido: {mensaje.EventId}");
+        Console.WriteLine($"Project created event: {mensaje.EventId}");
 
         await Task.CompletedTask;
     }

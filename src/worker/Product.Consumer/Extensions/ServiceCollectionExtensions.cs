@@ -1,6 +1,7 @@
-﻿using Api.Features.Shared;
 using MassTransit;
-using Microsoft.Extensions.DependencyInjection;
+using Models.Events;
+using ProjectSubscriber.MassTransit;
+using ProjectSubscriber.Options;
 using RabbitMQ.Client;
 using System.Reflection;
 
@@ -16,38 +17,77 @@ internal static class ServiceCollectionExtensions
                 x.AddConsumers(Assembly.GetExecutingAssembly());
 
                 x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host(rabbitMqOptions.HostName, rabbitMqOptions.Port, "/", h =>
+                {                    
+                    cfg.Host(rabbitMqOptions.HostName, rabbitMqOptions.Port, rabbitMqOptions.Vhost, h =>
                     {
                         h.Username(rabbitMqOptions.UserName);
                         h.Password(rabbitMqOptions.Password);
                     });
 
-                    cfg.ReceiveEndpoint("worker-productos-principal", e =>
+                    // Configurar EntityNameFormatter ANTES de los ReceiveEndpoints para que los binds usen el mismo formato
+                    cfg.MessageTopology.SetEntityNameFormatter(new EntityNameFormatter());
+
+                    cfg.ReceiveEndpoint(nameof(ProjectSubscriber), e =>
                     {
-                        e.SetQuorumQueue(); // ojo! posible procesamiento duplicado, pero garantiza alta disponibilidad y durabilidad
-                        // 1. Prefetch Count: Cuántos mensajes se bajan a la RAM de la App a la vez.
-                        // Para volumen alto, un valor entre 16 y 32 suele ser el punto dulce.
-                        e.PrefetchCount = 32;
-                        e.ConcurrentMessageLimit = 10;
+                        e.ConfigureConsumeTopology = false;
+                        e.SetQuorumQueue();             // ojo! posible procesamiento duplicado, pero garantiza alta disponibilidad y durabilidad                        
+                        e.PrefetchCount = 32;           // cuántos mensajes se bajan a la RAM de la App a la vez
+                        e.ConcurrentMessageLimit = 10;  // hilos
 
-                        // 2. Vinculación al Topic con Wildcard
-                        e.Bind("mi-exchange-de-productos", s =>
+                        // Vincular cada consumer con su tipo de mensaje usando el FullName
+                        // Esto debe hacerse ANTES de ConfigureConsumers cuando ConfigureConsumeTopology = false
+                        var consumerTypes = Assembly.GetExecutingAssembly()
+                            .GetTypes()
+                            .Where(t => t.GetInterfaces().Any(i => 
+                                i.IsGenericType && 
+                                i.GetGenericTypeDefinition() == typeof(IConsumer<>) &&
+                                typeof(IEvent).IsAssignableFrom(i.GetGenericArguments()[0])))
+                            .ToList();
+
+                        foreach (var consumerType in consumerTypes)
                         {
-                            s.RoutingKey = "dm.product.*";
-                            s.ExchangeType = ExchangeType.Topic;
-                        });
+                            var messageType = consumerType.GetInterfaces()
+                                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConsumer<>))
+                                .GetGenericArguments()[0];
+                            
+                            var fullName = messageType.FullName;
+                            if (!string.IsNullOrEmpty(fullName))
+                            {
+                                e.Bind(fullName, s =>
+                                {
+                                    s.ExchangeType = ExchangeType.Topic;
+                                    s.RoutingKey = fullName; // Usar el FullName como routing key para coincidir con el publicado
+                                });
+                            }
+                        }
 
-                        // 3. Registrar los consumidores en este endpoint
+                        // Configurar consumers automáticamente después de los binds
                         e.ConfigureConsumers(context);
-                        //e.ConfigureConsumer<ProjectAddedConsumer>(context);
                     });
 
-                    cfg.MessageTopology.SetEntityNameFormatter(new EntityNameFormatter(rabbitMqOptions));
+                    cfg.UseMessageRetry(r =>
+                    {
+                        r.Incremental(3, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+                        //r.Ignore<InvalidOperationException>();
+                    });
+
+                    cfg.UseKillSwitch(options =>
+                        options
+                            .SetActivationThreshold(10)
+                            .SetTripThreshold(0.15)
+                            .SetRestartTimeout(TimeSpan.FromSeconds(30))
+                            .SetTrackingPeriod(TimeSpan.FromSeconds(30))
+                    );
+                    cfg.MessageTopology.SetEntityNameFormatter(new EntityNameFormatter());                    
+                    cfg.Publish<IEvent>(p => p.ExchangeType = ExchangeType.Topic);
+
                     cfg.PublishTopology.BrokerTopologyOptions = PublishBrokerTopologyOptions.MaintainHierarchy;
                     cfg.DeployPublishTopology = true;
+                    cfg.OverrideDefaultBusEndpointQueueName(rabbitMqOptions.ExchangeName);
 
-                    
+                    cfg.ConnectConsumeObserver(new ConsumeObserver());
+
+                    //cfg.ConfigureEndpoints(context);
                 });
 
             });

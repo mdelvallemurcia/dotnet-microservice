@@ -1,4 +1,4 @@
-﻿using Models.Events;
+﻿using Models.Events.Project;
 
 namespace Api.Features.ProjectAdd.v1;
 

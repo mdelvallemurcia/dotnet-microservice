@@ -18,11 +18,9 @@ public class BearerTokenGenerator : IBearerTokenGenerator
     public string CreateToken(string userId)
     {
         var options = _optionsMonitor.CurrentValue;
-        // 1. Definir la clave secreta (debe venir de UserSecrets o KeyVault)
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // 2. Definir los Claims (información dentro del token)
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId),
@@ -30,7 +28,6 @@ public class BearerTokenGenerator : IBearerTokenGenerator
             new(ClaimTypes.Role, "Reader")
         };
 
-        // 3. Configuración del Token
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -40,7 +37,6 @@ public class BearerTokenGenerator : IBearerTokenGenerator
             SigningCredentials = creds
         };
 
-        // 4. Crear el Token
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
