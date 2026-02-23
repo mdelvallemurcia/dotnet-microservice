@@ -1,8 +1,7 @@
 {
   "vhosts": [
     { "name": "/" },
-    { "name": "dev" },
-    { "name": "stg" }
+    { "name": "dev" }
   ],
   "users": [
     {
@@ -22,13 +21,6 @@
     {
       "user": "guest",
       "vhost": "dev",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "guest",
-      "vhost": "stg",
       "configure": ".*",
       "write": ".*",
       "read": ".*"

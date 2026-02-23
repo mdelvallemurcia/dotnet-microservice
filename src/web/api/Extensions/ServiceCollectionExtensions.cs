@@ -121,27 +121,7 @@ public static class ServiceCollectionExtensions
                     });
 
                     cfg.UseTimeout(c => c.Timeout = TimeSpan.FromSeconds(5));
-                    
-                    cfg.MessageTopology.SetEntityNameFormatter(new EntityNameFormatter());
-                    cfg.PublishTopology.BrokerTopologyOptions = PublishBrokerTopologyOptions.FlattenHierarchy;
-                    cfg.DeployPublishTopology = true;
-
                     cfg.ConnectBusObserver(new BusObserver());
-
-                    cfg.Send<IEvent>(x =>
-                    {
-                        x.UseRoutingKeyFormatter(context => context.Message.GetType().FullName ?? string.Empty);                        
-                        x.UseCorrelationId(@event => @event.EventId);
-                    });
-                    
-                    // Configurar filtro de publicación a nivel del pipeline para establecer routing key
-                    cfg.UsePublishFilter<RoutingKeyFilter>(context);
-
-                    cfg.Publish<IEvent>(p =>
-                    {
-                        p.ExchangeType = ExchangeType.Topic;
-                        p.BindQueue(rabbitMqOptions.InvalidTopicQueue, "unroutable");                        
-                    });
                 });
 
             });
