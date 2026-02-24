@@ -5,8 +5,6 @@ using Asp.Versioning;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Models.Events;
-using RabbitMQ.Client;
 using System.Diagnostics;
 using System.Text;
 
@@ -131,13 +129,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddInternalServices(this IServiceCollection services)
     {
-        //services
-        //    .AddSingleton<IEventPublisher, EventPublisher>();
-
-        //services
-        //    .AddOptions<RabbitMqOptions>()
-        //    .BindConfiguration(RabbitMqOptions.Section);
-
         return services;
     }
 }

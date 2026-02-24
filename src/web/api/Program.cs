@@ -1,10 +1,11 @@
 using api.Options;
 using Api.Common;
 using Api.Extensions;
-using Api.Features.Shared;
 using Api.Features.Shared.Auth;
 using Aspire.ServiceDefaults;
 using FluentValidation;
+using Infrastructure.Extensions;
+using Infrastructure.Repository;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Services
     .AddExceptionHandler<GlobalExceptionHandler>()
     .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>()
     .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
+    .AddMongoRepository(builder.Configuration.GetSection(MongoDbOptions.Section).Get<MongoDbOptions>()!)
     .AddInternalServices();
 
 builder

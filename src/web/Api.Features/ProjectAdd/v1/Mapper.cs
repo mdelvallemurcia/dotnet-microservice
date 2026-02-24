@@ -1,4 +1,5 @@
-﻿using Models.Events.Project;
+﻿using Models.Entity;
+using Models.Events.Project;
 
 namespace Api.Features.ProjectAdd.v1;
 
@@ -12,5 +13,15 @@ internal static class Mapper
             request.CreationDate,
             request.Name
         );
+    }
+
+    internal static Project ToProjectEntity(this Request request)
+    {
+        return new Project
+        (
+            request.CreationDate,
+            request.Name
+        )
+        { Id = request.Id };
     }
 }

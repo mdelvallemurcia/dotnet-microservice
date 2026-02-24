@@ -1,9 +1,6 @@
 using MassTransit;
-using Models.Events;
-using Models.Events.Project;
 using ProjectSubscriber.MassTransit;
 using ProjectSubscriber.Options;
-using RabbitMQ.Client;
 using System.Reflection;
 
 namespace ProjectSubscriber.Extensions;

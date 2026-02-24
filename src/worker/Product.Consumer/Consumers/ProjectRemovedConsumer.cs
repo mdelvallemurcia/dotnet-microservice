@@ -1,5 +1,4 @@
 ﻿using MassTransit;
-using Models.Events.Project;
 
 namespace ProjectSubscriber.Consumers;
 
