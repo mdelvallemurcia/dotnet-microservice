@@ -44,10 +44,3 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.Run();
-
-// TODO - testing e2e
-// TODO - worker
-// TODO healthchecks
-// Aspire?
-// RabbitMq?
-// mass transit?

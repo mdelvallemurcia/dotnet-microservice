@@ -7,3 +7,4 @@
 - Agregar producto a Mongo
 - CancellationToken
 - Agregar librería control de Async
+- e2e
