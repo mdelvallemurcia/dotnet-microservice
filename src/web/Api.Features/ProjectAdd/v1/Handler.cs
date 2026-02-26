@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Models.Entity;
+using Models.Events.Project;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 namespace Api.Features.ProjectAdd.v1;
@@ -23,15 +24,27 @@ public class Handler : IEndpointModule
             .RequireAuthorization();
     }
 
-    internal static async Task<IResult> Handle(Request request, IPublishEndpoint publishEndpoint, IRepository<Project> repository, CancellationToken cancellationToken)
+    internal static async Task<IResult> Handle(Request request, IPublishEndpoint publishEndpoint, IRepository<Project> projectRepository, IRepository<EventFailure<ProjectAdded>> eventFailureRepository, CancellationToken cancellationToken)
     {
-        var project = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var project = await projectRepository.GetByIdAsync(request.Id, cancellationToken);
         if (project != null)
             return Results.Conflict($"Project with id {request.Id} already exists.");
 
         project = request.ToProjectEntity();
-        await repository.InsertAsync(project, cancellationToken);
-        await publishEndpoint.Publish(request.ToEventInsert());
+        await projectRepository.InsertAsync(project, cancellationToken);
+
+        var @event = request.ToEventInsert();
+        try
+        {
+            var ct = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await publishEndpoint.Publish(@event, ct.Token);
+        }
+        catch (Exception ex)
+        {
+            //log
+            await eventFailureRepository.InsertAsync(new(@event));
+            return Results.BadRequest();
+        }
 
         return Results.Accepted();
     } 

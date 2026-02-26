@@ -22,34 +22,35 @@ internal static class ServiceCollectionExtensions
                     {
                         h.Username(rabbitMqOptions.UserName);
                         h.Password(rabbitMqOptions.Password);
+                        h.Heartbeat(rabbitMqOptions.Heartbeat);
+                        h.PublisherConfirmation = true;
                     });
                    
                     cfg.ReceiveEndpoint(
                         "pm.subscriber",
                         e =>
                         {
-                            //e.ConfigureConsumeTopology = false; // para evitar que se creen colas y bindings automáticamente
                             e.SetQuorumQueue();                 // ojo! posible procesamiento duplicado, pero garantiza alta disponibilidad y durabilidad                        
                             e.PrefetchCount = 32;               // cuántos mensajes se bajan a la RAM de la App a la vez
-                            e.ConcurrentMessageLimit = 10;      // hilos
+                            e.ConcurrentMessageLimit = 10;      // hilos                            
 
-                            //e.Bind(
-                            //    rabbitMqOptions.ExchangeName, 
-                            //    s => {
-                            //        s.ExchangeType = ExchangeType.Topic;
-                            //        s.RoutingKey = rabbitMqOptions.RoutingKeyFilter;
-                            //    }
-                            //);
-
-                            // Configurar consumers automáticamente después de los binds
                             e.ConfigureConsumers(context);
                         }
                     );
+
+                    cfg.UseTimeout(c => c.Timeout = TimeSpan.FromSeconds(5));
 
                     cfg.UseMessageRetry(r =>
                     {
                         r.Incremental(3, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
                         //r.Ignore<InvalidOperationException>();
+                    });
+
+                    cfg.UseCircuitBreaker(cb =>
+                    {
+                        cb.TripThreshold = 15;
+                        cb.ActiveThreshold = 10;
+                        cb.ResetInterval = TimeSpan.FromMinutes(5);
                     });
 
                     cfg.UseKillSwitch(options =>

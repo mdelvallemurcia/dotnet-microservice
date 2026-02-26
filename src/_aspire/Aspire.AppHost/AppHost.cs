@@ -11,16 +11,17 @@ var rabbitmq = builder
     .WithEnvironment("RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS", "-rabbitmq_management load_definitions \"/etc/rabbitmq/rabbitmq-definitions.json\""); ;
 
 var mongoDb = builder
-    .AddMongoDB("MongoDb", 27017);
+    .AddMongoDB("MongoDb", 27017)
+    .WithMongoExpress();
 
 builder
     .AddProject<api>("Api")
-    .WithReference(rabbitmq)
+    .WaitForStart(rabbitmq)
     .WithReference(mongoDb);
 
 builder
     .AddProject<ProjectSubscriber>("ProjectSubscriber")
-    .WithReference(rabbitmq)
+    .WaitForStart(rabbitmq)
     .WithReference(mongoDb);
 
 builder.Build().Run();

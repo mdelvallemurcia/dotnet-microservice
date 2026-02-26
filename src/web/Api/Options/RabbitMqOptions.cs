@@ -12,4 +12,5 @@ public class RabbitMqOptions
     public string ExchangeName { get; set; } = string.Empty;
     public string InvalidTopicQueue { get; set; } = string.Empty;
     public bool Durable { get; set; } = true;
+    public ushort Heartbeat { get; set; } = 30;
 }

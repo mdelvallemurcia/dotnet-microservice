@@ -11,4 +11,5 @@ public class RabbitMqOptions
     public string Password { get; set; } = string.Empty;
     public string ExchangeName { get; set; } = string.Empty;
     public string RoutingKeyFilter { get; set; } = string.Empty;
+    public ushort Heartbeat { get; set; } = 30;
 }

@@ -19,12 +19,14 @@ builder.Services
     .ConfigureAuthentication(builder.Configuration.GetSection(BearerTokenOptions.Section).Get<BearerTokenOptions>()!)
     .AddAuthorization()
     .ConfigureProblemDetails()
-    .AddFluentValidationAutoValidation()
     .AddExceptionHandler<GlobalExceptionHandler>()
+    .AddFluentValidationAutoValidation()
     .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>()
-    .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
     .AddMongoRepository(builder.Configuration.GetSection(MongoDbOptions.Section).Get<MongoDbOptions>()!)
-    .AddInternalServices();
+    .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
+    .AddInternalServices()
+    .ConfigureCors()
+    ;
 
 builder
     .AddServiceDefaults()

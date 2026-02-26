@@ -30,7 +30,7 @@ public static class WebApplicationExtensions
             .ReportApiVersions()
             .Build();
 
-        app.MapDiscoveredEndpoints(versionSet);
+        app.MapDiscoveredEndpoints(versionSet);        
         
         return app;
     }

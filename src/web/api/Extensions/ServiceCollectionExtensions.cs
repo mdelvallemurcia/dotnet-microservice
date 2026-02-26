@@ -115,14 +115,21 @@ public static class ServiceCollectionExtensions
                     cfg.Host(rabbitMqOptions.HostName, rabbitMqOptions.Port, rabbitMqOptions.Vhost, h =>
                     {
                         h.Username(rabbitMqOptions.UserName);
-                        h.Password(rabbitMqOptions.Password);  
+                        h.Password(rabbitMqOptions.Password);
+                        h.Heartbeat(rabbitMqOptions.Heartbeat);
+                        h.PublisherConfirmation = true;
                     });
 
-                    cfg.UseTimeout(c => c.Timeout = TimeSpan.FromSeconds(5));
+                    cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)));
                     cfg.ConnectBusObserver(new BusObserver());
                 });
-
             });
+
+        services.Configure<MassTransitHostOptions>(options =>
+        {
+            options.WaitUntilStarted = true;
+            options.StartTimeout = TimeSpan.FromSeconds(10);
+        });
 
         return services;
     }
