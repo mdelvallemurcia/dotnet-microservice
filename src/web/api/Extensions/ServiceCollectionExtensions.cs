@@ -6,9 +6,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
-using OpenTelemetry.Exporter;
+using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
 using System.Text;
@@ -135,11 +134,13 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection ConfigureOpenTelemetry(this IServiceCollection services)
     {
-        //builder.Logging.AddOpenTelemetry(logging =>
-        //{
-        //    logging.IncludeFormattedMessage = true;
-        //    logging.IncludeScopes = true;
-        //});
+        Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator(
+            [
+                new TraceContextPropagator(),
+                new BaggagePropagator()
+            ]
+        ));
+
         var healthEndpointPath = "/health";     //TODO get from healthcheck lib
         var alivenessEndpointPath = "/alive";
         services
@@ -168,17 +169,6 @@ public static class ServiceCollectionExtensions
                     .AddOtlpExporter();
             })
             .WithLogging();
-
-        //services.ConfigureOpenTelemetryTracerProvider((sp, builder) =>
-        //{            
-        //    builder.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(openTelemetryOptions.ServiceName));
-        //});
-
-        //var useOtlpExporter = !string.IsNullOrWhiteSpace(openTelemetryOptions.ExporterEndpoint);
-        //if (useOtlpExporter)
-        //{
-        //    services.AddOpenTelemetry().UseOtlpExporter();
-        //}
 
         return services;
     }

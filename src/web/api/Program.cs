@@ -6,6 +6,8 @@ using Aspire.ServiceDefaults;
 using FluentValidation;
 using Infrastructure.Extensions;
 using Infrastructure.Repository;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
@@ -33,8 +35,7 @@ builder
     .AddServiceDefaults()
     .AddRabbitMQClient("messaging");
 
-builder.Logging
-    .AddConsole()
+builder.Logging    
     .AddOpenTelemetry(logging =>
     {
         var serviceName = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME")??string.Empty;

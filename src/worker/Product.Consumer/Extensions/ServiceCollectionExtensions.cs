@@ -1,4 +1,8 @@
 using MassTransit;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using ProjectSubscriber.MassTransit;
 using ProjectSubscriber.Options;
 using System.Reflection;
@@ -14,10 +18,9 @@ internal static class ServiceCollectionExtensions
             {
                 x.AddConsumers(Assembly.GetExecutingAssembly());
 
+                services.AddSingleton<IConsumeObserver, ConsumeObserver>();
                 x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.ConnectConsumeObserver(new ConsumeObserver());
-
+                {                    
                     cfg.Host(rabbitMqOptions.HostName, rabbitMqOptions.Port, rabbitMqOptions.Vhost, h =>
                     {
                         h.Username(rabbitMqOptions.UserName);
@@ -64,6 +67,46 @@ internal static class ServiceCollectionExtensions
                 });
 
             });
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureOpenTelemetry(this IServiceCollection services)
+    {
+        Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator(
+            [
+                new TraceContextPropagator(),
+                new BaggagePropagator()
+            ]
+        ));
+
+        var healthEndpointPath = "/health";     //TODO get from healthcheck lib
+        var alivenessEndpointPath = "/alive";
+        services
+            .AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing                
+                    .SetSampler(new AlwaysOnSampler())
+                    .AddAspNetCoreInstrumentation(tracing =>
+                        tracing.Filter = context =>
+                            !context.Request.Path.StartsWithSegments(healthEndpointPath)
+                            && !context.Request.Path.StartsWithSegments(alivenessEndpointPath)
+                    )                    
+                    .AddHttpClientInstrumentation()
+                    .AddSource(nameof(MassTransit))                    
+                    .AddOtlpExporter();
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddMeter(nameof(MassTransit))
+                    .AddOtlpExporter();
+            })
+            .WithLogging();
 
         return services;
     }

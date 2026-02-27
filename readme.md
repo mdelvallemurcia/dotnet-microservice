@@ -8,3 +8,4 @@
 - CancellationToken
 - Agregar librería control de Async
 - e2e
+- console project - Hosting environment: Production
