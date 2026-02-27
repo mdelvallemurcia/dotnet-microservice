@@ -4,6 +4,8 @@ using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Models.Entity;
 using Models.Events.Project;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
@@ -24,7 +26,13 @@ public class Handler : IEndpointModule
             .RequireAuthorization();
     }
 
-    internal static async Task<IResult> Handle(Request request, IPublishEndpoint publishEndpoint, IRepository<Project> projectRepository, IRepository<EventFailure<ProjectAdded>> eventFailureRepository, CancellationToken cancellationToken)
+    internal static async Task<IResult> Handle(
+        Request request, 
+        IPublishEndpoint publishEndpoint, 
+        IRepository<Project> projectRepository, 
+        IRepository<EventFailure<ProjectAdded>> eventFailureRepository, 
+        ILogger<Handler> logger,
+        CancellationToken cancellationToken)
     {
         var project = await projectRepository.GetByIdAsync(request.Id, cancellationToken);
         if (project != null)
@@ -41,11 +49,12 @@ public class Handler : IEndpointModule
         }
         catch (Exception ex)
         {
-            //log
+            logger.LogError(ex, "Failed to publish ProjectAdded event for project {ProjectId}", request.Id);
             await eventFailureRepository.InsertAsync(new(@event));
-            return Results.BadRequest();
+            return Results.InternalServerError(); //TODO adaptar a la excepción
         }
 
+        logger.LogInformation("Project created: {ProjectId}", project.Id);
         return Results.Accepted();
     } 
 }

@@ -6,6 +6,8 @@ using Aspire.ServiceDefaults;
 using FluentValidation;
 using Infrastructure.Extensions;
 using Infrastructure.Repository;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,19 +26,28 @@ builder.Services
     .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>()
     .AddMongoRepository(builder.Configuration.GetSection(MongoDbOptions.Section).Get<MongoDbOptions>()!)
     .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
-    .AddInternalServices()
     .ConfigureCors()
-    ;
+    .ConfigureOpenTelemetry();
 
 builder
     .AddServiceDefaults()
     .AddRabbitMQClient("messaging");
 
-builder.Logging.AddConsole();
+builder.Logging
+    .AddConsole()
+    .AddOpenTelemetry(logging =>
+    {
+        var serviceName = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME")??string.Empty;
+        logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName));
+        logging.IncludeFormattedMessage = true;
+        logging.IncludeScopes = true;
+        logging.AddOtlpExporter();
+    });
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
+
 app.MapDefaultEndpoints();
 app.ConfigureOpenApi();
 app.ConfigureApiVersions();

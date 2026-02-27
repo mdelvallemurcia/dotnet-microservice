@@ -15,4 +15,9 @@
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="MassTransit\Consumer\" />
+    <Folder Include="MassTransit\Publisher\" />
+  </ItemGroup>
+
 </Project>

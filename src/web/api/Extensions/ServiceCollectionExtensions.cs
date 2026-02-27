@@ -5,6 +5,11 @@ using Asp.Versioning;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using System.Diagnostics;
 using System.Text;
 
@@ -28,7 +33,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection ConfigureBearerTokenGenerator  (this IServiceCollection services)
+    public static IServiceCollection ConfigureBearerTokenGenerator(this IServiceCollection services)
     {
         services
             .AddOptions<BearerTokenOptions>()
@@ -120,22 +125,61 @@ public static class ServiceCollectionExtensions
                         h.PublisherConfirmation = true;
                     });
 
-                    cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)));
+                    cfg.UseMessageRetry(r => r.Incremental(5, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)));
                     cfg.ConnectBusObserver(new BusObserver());
                 });
             });
 
-        services.Configure<MassTransitHostOptions>(options =>
-        {
-            options.WaitUntilStarted = true;
-            options.StartTimeout = TimeSpan.FromSeconds(10);
-        });
-
         return services;
     }
 
-    public static IServiceCollection AddInternalServices(this IServiceCollection services)
+    public static IServiceCollection ConfigureOpenTelemetry(this IServiceCollection services)
     {
+        //builder.Logging.AddOpenTelemetry(logging =>
+        //{
+        //    logging.IncludeFormattedMessage = true;
+        //    logging.IncludeScopes = true;
+        //});
+        var healthEndpointPath = "/health";     //TODO get from healthcheck lib
+        var alivenessEndpointPath = "/alive";
+        services
+            .AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetSampler(new AlwaysOnSampler())
+                    .AddAspNetCoreInstrumentation(tracing =>
+                        tracing.Filter = context =>
+                            !context.Request.Path.StartsWithSegments(healthEndpointPath)
+                            && !context.Request.Path.StartsWithSegments(alivenessEndpointPath)
+                    )
+                    .AddHttpClientInstrumentation()
+                    .AddSource(nameof(MassTransit))
+                    .AddSource(nameof(MongoDB.Driver.Core.Extensions.DiagnosticSources))
+                    .AddOtlpExporter();
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation() 
+                    .AddMeter(nameof(MassTransit))
+                    .AddOtlpExporter();
+            })
+            .WithLogging();
+
+        //services.ConfigureOpenTelemetryTracerProvider((sp, builder) =>
+        //{            
+        //    builder.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(openTelemetryOptions.ServiceName));
+        //});
+
+        //var useOtlpExporter = !string.IsNullOrWhiteSpace(openTelemetryOptions.ExporterEndpoint);
+        //if (useOtlpExporter)
+        //{
+        //    services.AddOpenTelemetry().UseOtlpExporter();
+        //}
+
         return services;
     }
 }

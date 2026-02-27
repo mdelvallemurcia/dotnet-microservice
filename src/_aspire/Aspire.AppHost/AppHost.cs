@@ -11,17 +11,31 @@ var rabbitmq = builder
     .WithEnvironment("RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS", "-rabbitmq_management load_definitions \"/etc/rabbitmq/rabbitmq-definitions.json\""); ;
 
 var mongoDb = builder
-    .AddMongoDB("MongoDb", 27017)
-    .WithMongoExpress();
+    .AddMongoDB("MongoDb", 27017);
+//.WithMongoExpress();
 
+var lgtm = builder
+    .AddContainer("lgtm", "grafana/otel-lgtm")
+    .WithEnvironment("OTELCOL_LOG_LEVEL", "debug")
+    .WithHttpEndpoint(port: 3000, targetPort: 3000, name: "grafana")
+    .WithEndpoint(port: 4317, targetPort: 4317, name: "otlp-grpc")
+    .WithEndpoint(port: 4318, targetPort: 4318, name: "otlp-http");
+
+var otelEndpoint = lgtm.GetEndpoint("otlp-http");
 builder
     .AddProject<api>("Api")
     .WaitForStart(rabbitmq)
-    .WithReference(mongoDb);
+    .WithReference(mongoDb)
+    .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
+    .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
+    .WithEnvironment("OTEL_EXPORTER_OTLP_INSECURE", "true");
 
 builder
     .AddProject<ProjectSubscriber>("ProjectSubscriber")
-    .WaitForStart(rabbitmq)
-    .WithReference(mongoDb);
+    .WaitFor(rabbitmq)
+    .WithReference(mongoDb)
+    .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
+    .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
+    .WithEnvironment("OTEL_EXPORTER_OTLP_INSECURE", "true");
 
 builder.Build().Run();
