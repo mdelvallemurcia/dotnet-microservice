@@ -19,9 +19,11 @@
 	<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
 	<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
 	<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
+    <PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\..\Models\Models.csproj" />
   </ItemGroup>
 

@@ -94,7 +94,8 @@ internal static class ServiceCollectionExtensions
                             && !context.Request.Path.StartsWithSegments(alivenessEndpointPath)
                     )                    
                     .AddHttpClientInstrumentation()
-                    .AddSource(nameof(MassTransit))                    
+                    .AddSource(nameof(MassTransit))
+                    .AddSource(Infrastructure.Repository.Const.MongoOtelSource)
                     .AddOtlpExporter();
             })
             .WithMetrics(metrics =>

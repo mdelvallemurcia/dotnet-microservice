@@ -1,6 +1,5 @@
 # TODO
 - Logger (Otel) - mantener contexto!
-- Timeout MassTransit
 - HealthCheck
 - Failover
 - Como puedo forzar un nack?
@@ -9,3 +8,4 @@
 - Agregar librería control de Async
 - e2e
 - console project - Hosting environment: Production
+- Timeout MassTransit

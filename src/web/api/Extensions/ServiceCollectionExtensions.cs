@@ -155,8 +155,9 @@ public static class ServiceCollectionExtensions
                             && !context.Request.Path.StartsWithSegments(alivenessEndpointPath)
                     )
                     .AddHttpClientInstrumentation()
+                    //.AddMongoDBInstrumentation()
                     .AddSource(nameof(MassTransit))
-                    .AddSource(nameof(MongoDB.Driver.Core.Extensions.DiagnosticSources))
+                    .AddSource(Infrastructure.Repository.Const.MongoOtelSource)
                     .AddOtlpExporter();
             })
             .WithMetrics(metrics =>
