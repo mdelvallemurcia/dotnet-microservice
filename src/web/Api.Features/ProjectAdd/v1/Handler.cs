@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Models.Entity;
 using Models.Events.Project;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;

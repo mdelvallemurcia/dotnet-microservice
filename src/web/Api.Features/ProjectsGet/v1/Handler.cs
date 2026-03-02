@@ -1,8 +1,11 @@
 ﻿using Asp.Versioning.Builder;
+using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using Models.Entity;
 
 namespace Api.Features.ProjectsGet.v1;
 
@@ -19,15 +22,13 @@ public class Handler : IEndpointModule
             .RequireAuthorization(new AuthorizeAttribute { Roles = "Reader" });
     }
 
-    internal static async Task<IResult> Handle()
+    internal static async Task<IResult> Handle(
+        IRepository<Project> projectRepository,
+        ILogger<Handler> logger
+    )
     {
-        var projects = new List<Response>
-        {
-            new Response { Id = Guid.CreateVersion7(), Name = "Nemo" },
-            new Response { Id = Guid.CreateVersion7(), Name = "Poseidon" },
-            new Response { Id = Guid.CreateVersion7(), Name = "Luzu" },
-        };
-
+        logger.LogInformation("Getting projects");
+        var projects = await projectRepository.GetAllAsync();
         return Results.Ok(projects);
     }
 }
