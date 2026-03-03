@@ -22,7 +22,7 @@ var lgtm = builder
     .WithEndpoint(port: 4318, targetPort: 4318, name: "otlp-http");
 
 var otelEndpoint = lgtm.GetEndpoint("otlp-http");
-builder
+var api = builder
     .AddProject<api>("Api")
     .WaitForStart(rabbitmq)
     .WithReference(mongoDb)
@@ -37,5 +37,14 @@ builder
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
     .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
     .WithEnvironment("OTEL_EXPORTER_OTLP_INSECURE", "true");
+
+//var frontendPath = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../../web/ui"));
+builder
+    .AddJavaScriptApp("frontend", "../../web/ui", runScriptName: "dev")
+    .WithReference(api)
+    .WithHttpEndpoint(port: 5173, targetPort: 5174, name: "http")
+    .WithEnvironment("NODE_ENV", "development")
+    .WithExternalHttpEndpoints()
+    .ExcludeFromManifest();
 
 builder.Build().Run();

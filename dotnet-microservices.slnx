@@ -16,6 +16,10 @@
   <Folder Name="/src/web/">
     <Project Path="src/web/Api.Features/api.features.csproj" Id="fe07252f-d7fd-4917-928a-10993a277470" />
     <Project Path="src/web/Api/api.csproj" />
+    <Project Path="src/web/UI/ui.esproj">
+      <Build />
+      <Deploy />
+    </Project>
   </Folder>
   <Folder Name="/src/worker/">
     <Project Path="src/worker/Product.Consumer/ProjectSubscriber.csproj" Id="cd855d7e-25be-46cb-9735-b117584d3729" />
