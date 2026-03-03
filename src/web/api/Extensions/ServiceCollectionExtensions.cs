@@ -89,9 +89,11 @@ internal static class ServiceCollectionExtensions
         services
             .AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
             {
+
                 pc.ProblemDetails.Extensions.Add("id", Activity.Current.Id);
                 pc.ProblemDetails.Extensions.Add("spanId", Activity.Current.SpanId.ToString());
-                pc.ProblemDetails.Extensions.Add("traceId", Activity.Current.TraceId.ToString());
+                if (!pc.ProblemDetails.Extensions.ContainsKey("traceId"))
+                    pc.ProblemDetails.Extensions.Add("traceId", Activity.Current.TraceId.ToString());
             });
 
         return services;

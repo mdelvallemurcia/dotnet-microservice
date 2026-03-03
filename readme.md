@@ -8,16 +8,16 @@
 
 
 # Diagram
-
 ```mermaid
 flowchart TD
-    A[Api]
-    B(RabbitMq)
-    C(MongoDb)
-    D[ProjectSubscriber]
+    A[☁️ Api]
+    B(🐰 RabbitMq)
+    C(🌿 MongoDb)
+    D[⚙️ ProjectSubscriber]
 
     A --> B
     A --> C
     D --> B
-    D --> C
+    D --> C    
+    
 ```
