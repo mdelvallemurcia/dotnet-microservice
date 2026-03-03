@@ -3,7 +3,7 @@ using Models.Events.Project;
 
 namespace ProjectSubscriber.Consumers;
 
-public class ProjectAddedConsumer : IConsumer<ProjectAdded>
+internal class ProjectAddedConsumer : IConsumer<ProjectAdded>
 {
     private readonly ILogger<ProjectAddedConsumer> _logger;
     public ProjectAddedConsumer(ILogger<ProjectAddedConsumer> logger)
@@ -11,11 +11,11 @@ public class ProjectAddedConsumer : IConsumer<ProjectAdded>
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<ProjectAdded> context)
+    public Task Consume(ConsumeContext<ProjectAdded> context)
     {
         var mensaje = context.Message;
         _logger.LogInformation($"Project created event: {mensaje.EventId}");
 
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

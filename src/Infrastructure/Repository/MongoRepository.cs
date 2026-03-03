@@ -1,6 +1,6 @@
-﻿using Models.Entity;
+﻿using System.Linq.Expressions;
+using Models.Entity;
 using MongoDB.Driver;
-using System.Linq.Expressions;
 
 namespace Infrastructure.Repository;
 
@@ -14,25 +14,24 @@ public class MongoRepository<T> : IRepository<T> where T : BaseEntity
         _collection = database.GetCollection<T>(collectionName);
     }
 
-    public async Task<List<T>> GetAllAsync(CancellationToken ct = default)
+    public Task<List<T>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _collection
+        return _collection
             .Find(FilterDefinition<T>.Empty)
             .ToListAsync(ct);
     }
 
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _collection
-            .Find(x => x.Id == id)
-            .FirstOrDefaultAsync(ct);
+        var findResult = await _collection.FindAsync(x => x.Id == id, cancellationToken: ct);
+        var record = await findResult.FirstOrDefaultAsync(cancellationToken: ct);
+
+        return record;
     }
 
-    public async Task<List<T>> FilterAsync(
-        Expression<Func<T, bool>> filter,
-        CancellationToken ct = default)
+    public Task<List<T>> FilterAsync(Expression<Func<T, bool>> filter, CancellationToken ct = default)
     {
-        return await _collection
+        return _collection
             .Find(filter)
             .ToListAsync(ct);
     }

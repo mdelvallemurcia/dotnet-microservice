@@ -1,6 +1,6 @@
 ﻿namespace Infrastructure.Repository;
 
-public class Const
+public class Consts
 {
     public const string MongoOtelSource = "MongoDB.Driver.Core.Extensions.DiagnosticSources";
 }

@@ -1,21 +1,27 @@
+using System.Diagnostics;
+using System.Text;
+
 using api.MassTransit;
 using api.Options;
+
 using Api.Features.Shared.Auth;
+
 using Asp.Versioning;
+
 using MassTransit;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using System.Diagnostics;
-using System.Text;
 
 namespace Api.Extensions;
 
-public static class ServiceCollectionExtensions
+internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection ConfigureApiVersioning(this IServiceCollection services)
     {
@@ -39,7 +45,7 @@ public static class ServiceCollectionExtensions
             .AddOptions<BearerTokenOptions>()
             .BindConfiguration(BearerTokenOptions.Section);
 
-        services.AddSingleton<IBearerTokenGenerator, BearerTokenGenerator>();            
+        services.AddSingleton<IBearerTokenGenerator, BearerTokenGenerator>();
 
         return services;
     }
@@ -85,7 +91,7 @@ public static class ServiceCollectionExtensions
             {
                 pc.ProblemDetails.Extensions.Add("id", Activity.Current.Id);
                 pc.ProblemDetails.Extensions.Add("spanId", Activity.Current.SpanId.ToString());
-                pc.ProblemDetails.Extensions.Add("traceId", Activity.Current.TraceId.ToString());                
+                pc.ProblemDetails.Extensions.Add("traceId", Activity.Current.TraceId.ToString());
             });
 
         return services;
@@ -111,7 +117,7 @@ public static class ServiceCollectionExtensions
     {
         // Registrar el filtro de routing key
         services.AddSingleton<RoutingKeyFilter>();
-        
+
         services
             .AddMassTransit(x =>
             {
@@ -158,7 +164,7 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     //.AddMongoDBInstrumentation()
                     .AddSource(nameof(MassTransit))
-                    .AddSource(Infrastructure.Repository.Const.MongoOtelSource)
+                    .AddSource(Infrastructure.Repository.Consts.MongoOtelSource)
                     .AddOtlpExporter();
             })
             .WithMetrics(metrics =>
@@ -166,7 +172,7 @@ public static class ServiceCollectionExtensions
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation() 
+                    .AddRuntimeInstrumentation()
                     .AddMeter(nameof(MassTransit))
                     .AddOtlpExporter();
             })
@@ -180,13 +186,13 @@ public static class ServiceCollectionExtensions
         services
             .AddHealthChecks()
             .AddCheck(
-                name: "self", 
+                name: "self",
                 check: () => HealthCheckResult.Healthy(),
                 tags: ["live"]
             )
             .AddCheck(
                 name: "masstransit",
-                check: () => HealthCheckResult.Healthy(), 
+                check: () => HealthCheckResult.Healthy(),
                 tags: ["ready"]
             )
             .AddMongoDb(
@@ -195,16 +201,16 @@ public static class ServiceCollectionExtensions
             );
 
         services.Configure<HealthCheckPublisherOptions>(options =>
-        {            
-            options.Delay = TimeSpan.FromSeconds(5); 
-            options.Period = TimeSpan.FromSeconds(10); 
+        {
+            options.Delay = TimeSpan.FromSeconds(5);
+            options.Period = TimeSpan.FromSeconds(10);
         });
 
         services.Configure<MassTransitHostOptions>(options =>
         {
-            options.WaitUntilStarted = false;            
+            options.WaitUntilStarted = false;
         });
 
         return services;
-    }    
+    }
 }

@@ -1,6 +1,6 @@
-﻿using Api.Features.Shared.Auth;
+﻿using System.Net.Http.Headers;
+using Api.Features.Shared.Auth;
 using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net.Http.Headers;
 
 namespace Api.Features.Test.Integration.ProjectsGet.v1;
 

@@ -1,20 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Infrastructure.Repository;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Models.Entity;
+using Moq;
 
 namespace Api.Features.Test.Integration;
 
 public class ApiTestBase : IClassFixture<WebApplicationFactory<Program>>
 {
-    protected readonly HttpClient Client;
-    protected readonly WebApplicationFactory<Program> Factory;
+    private readonly WebApplicationFactory<Program> _factory;
 
-    public ApiTestBase(WebApplicationFactory<Program> factory)
+    internal HttpClient Client { get; set; }
+    internal ApiTestBase(WebApplicationFactory<Program> factory)
     {
-        Factory = factory.WithWebHostBuilder(builder =>
+        _factory = factory.WithWebHostBuilder(builder =>
         {
             // Esto le dice al test: "Busca los archivos de configuración donde está la clase Program"
             builder.UseContentRoot(Directory.GetCurrentDirectory());
 
-            //builder.ConfigureServices(services =>{});
+            builder.ConfigureServices(services =>
+            {
+                services.AddScoped(cfg => Mock.Of<IRepository<Project>>());
+            });
 
             builder.ConfigureAppConfiguration((context, config) =>
             {
@@ -22,7 +28,8 @@ public class ApiTestBase : IClassFixture<WebApplicationFactory<Program>>
             });
         });
 
-        Client = Factory.CreateClient();
+        Client = _factory.CreateClient();
     }
 
 }
+

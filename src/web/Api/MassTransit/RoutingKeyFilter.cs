@@ -3,9 +3,9 @@ using Models.Events;
 
 namespace api.MassTransit;
 
-public class RoutingKeyFilter : IFilter<PublishContext<IEvent>>
+internal class RoutingKeyFilter : IFilter<PublishContext<IEvent>>
 {
-    public async Task Send(PublishContext<IEvent> context, IPipe<PublishContext<IEvent>> next)
+    public Task Send(PublishContext<IEvent> context, IPipe<PublishContext<IEvent>> next)
     {
         var routingKey = context.Message.GetType().FullName ?? string.Empty;
         if (!string.IsNullOrEmpty(routingKey))
@@ -18,8 +18,8 @@ public class RoutingKeyFilter : IFilter<PublishContext<IEvent>>
                 sendContext.RoutingKey = routingKey;
             }
         }
-        
-        await next.Send(context);
+
+        return next.Send(context);
     }
 
     public void Probe(ProbeContext context) => context.CreateFilterScope("routingKey");

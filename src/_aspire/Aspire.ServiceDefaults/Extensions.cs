@@ -1,26 +1,25 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Aspire.ServiceDefaults
+namespace Aspire.ServiceDefaults;
+
+// Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
+// This project should be referenced by each service project in your solution.
+// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
+public static class Extensions
 {
-    // Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-    // This project should be referenced by each service project in your solution.
-    // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-    public static class Extensions
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+        builder.Services.AddServiceDiscovery();
+
+        builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            builder.Services.AddServiceDiscovery();
+            // Turn on resilience by default
+            http.AddStandardResilienceHandler();
+            // Turn on service discovery by default
+            http.AddServiceDiscovery();
+        });
 
-            builder.Services.ConfigureHttpClientDefaults(http =>
-            {
-                // Turn on resilience by default
-                http.AddStandardResilienceHandler();
-                // Turn on service discovery by default
-                http.AddServiceDiscovery();
-            });
-
-            return builder;
-        }
+        return builder;
     }
 }

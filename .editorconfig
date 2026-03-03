@@ -1,0 +1,43 @@
+# Indica que este es el archivo raíz y deje de buscar hacia arriba
+root = true
+
+# Reglas para todos los archivos C#
+[*.cs]
+
+# --- REGLAS DE ASYNCFIXER (Forzadas como ERROR) ---
+# AsyncFixer01: Unnecessary async/await (Reducir overhead)
+dotnet_diagnostic.AsyncFixer01.severity = error
+# AsyncFixer02: Long-running or blocking operations inside async methods
+dotnet_diagnostic.AsyncFixer02.severity = error
+# AsyncFixer03: Fire-and-forget (async void) - ¡Peligro de crash!
+dotnet_diagnostic.AsyncFixer03.severity = error
+# AsyncFixer04: Fire-and-forget inside a using block
+dotnet_diagnostic.AsyncFixer04.severity = error
+# Desactivar la necesidad de ConfigureAwait (CA2007)
+dotnet_diagnostic.CA2007.severity = none
+
+# --- REGLAS DE .NET (Buenas prácticas extra) ---
+# Forzar el uso de 'var' para que el código sea más limpio
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_namespace_declarations = file_scoped:error
+
+# Organizar usings (primero los System)
+dotnet_separate_import_directive_groups = false
+dotnet_sort_system_directives_first = true
+dotnet_style_qualification_for_field = false:error
+dotnet_naming_rule.private_fields_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_with_underscore.style = prefix_underscore
+dotnet_naming_rule.private_fields_with_underscore.severity = error
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
+
+# --- ESTILO DE CÓDIGO ---
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true

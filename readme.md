@@ -1,6 +1,4 @@
 # TODO
-- HealthCheck
-- Failover
 - Como puedo forzar un nack? puedo publicar haciendo delay?
 - Agregar librería control de Async
 - e2e
@@ -13,15 +11,13 @@
 
 ```mermaid
 flowchart TD
-    A[Christmas]
-    B(Go shopping)
-    A -->|Get money| B
-    C{Let me think}
-    B --> C
-    D[Laptop]
-    E[iPhone]
-    C -->|One| D
-    C -->|Two| E
-    F[fa:fa-car Car]
-    C -->|Three| F
+    A[Api]
+    B(RabbitMq)
+    C(MongoDb)
+    D[ProjectSubscriber]
+
+    A --> B
+    A --> C
+    D --> B
+    D --> C
 ```

@@ -96,7 +96,7 @@ internal static class ServiceCollectionExtensions
                     )                    
                     .AddHttpClientInstrumentation()
                     .AddSource(nameof(MassTransit))
-                    .AddSource(Infrastructure.Repository.Const.MongoOtelSource)
+                    .AddSource(Infrastructure.Repository.Consts.MongoOtelSource)
                     .AddOtlpExporter();
             })
             .WithMetrics(metrics =>
