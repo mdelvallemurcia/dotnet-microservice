@@ -1,0 +1,15 @@
+meta {
+  name: live
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{url}}/health/live
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

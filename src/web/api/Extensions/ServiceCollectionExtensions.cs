@@ -4,6 +4,7 @@ using Api.Features.Shared.Auth;
 using Asp.Versioning;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
@@ -173,4 +174,37 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection ConfigureHealthChecks(this IServiceCollection services)
+    {
+        services
+            .AddHealthChecks()
+            .AddCheck(
+                name: "self", 
+                check: () => HealthCheckResult.Healthy(),
+                tags: ["live"]
+            )
+            .AddCheck(
+                name: "masstransit",
+                check: () => HealthCheckResult.Healthy(), 
+                tags: ["ready"]
+            )
+            .AddMongoDb(
+                name: "mongodb",
+                tags: ["ready"]
+            );
+
+        services.Configure<HealthCheckPublisherOptions>(options =>
+        {            
+            options.Delay = TimeSpan.FromSeconds(5); 
+            options.Period = TimeSpan.FromSeconds(10); 
+        });
+
+        services.Configure<MassTransitHostOptions>(options =>
+        {
+            options.WaitUntilStarted = false;            
+        });
+
+        return services;
+    }    
 }

@@ -6,8 +6,6 @@ using Aspire.ServiceDefaults;
 using FluentValidation;
 using Infrastructure.Extensions;
 using Infrastructure.Repository;
-using OpenTelemetry;
-using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
@@ -29,11 +27,12 @@ builder.Services
     .AddMongoRepository(builder.Configuration.GetSection(MongoDbOptions.Section).Get<MongoDbOptions>()!)
     .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
     .ConfigureCors()
-    .ConfigureOpenTelemetry();
+    .ConfigureOpenTelemetry()
+    .ConfigureHealthChecks();
 
 builder
-    .AddServiceDefaults()
-    .AddRabbitMQClient("messaging");
+    .AddServiceDefaults();
+    //.AddRabbitMQClient("messaging");
 
 builder.Logging    
     .AddOpenTelemetry(logging =>
@@ -49,12 +48,12 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-app.MapDefaultEndpoints();
 app.ConfigureOpenApi();
 app.ConfigureApiVersions();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapDefaultHealthChecks();
 
 app.Run();
