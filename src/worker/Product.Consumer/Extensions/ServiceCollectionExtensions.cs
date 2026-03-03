@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
@@ -108,6 +109,35 @@ internal static class ServiceCollectionExtensions
                     .AddOtlpExporter();
             })
             .WithLogging();
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureHealthChecks(this IServiceCollection services)
+    {
+        services
+            .AddHealthChecks()
+            .AddCheck(
+                name: "self",
+                check: () => HealthCheckResult.Healthy(),
+                tags: ["live"]
+            )
+            .AddCheck(
+                name: "masstransit",
+                check: () => HealthCheckResult.Healthy(),
+                tags: ["ready"]
+            );
+
+        services.Configure<HealthCheckPublisherOptions>(options =>
+        {
+            options.Delay = TimeSpan.FromSeconds(5);
+            options.Period = TimeSpan.FromSeconds(10);
+        });
+
+        services.Configure<MassTransitHostOptions>(options =>
+        {
+            options.WaitUntilStarted = false;
+        });
 
         return services;
     }

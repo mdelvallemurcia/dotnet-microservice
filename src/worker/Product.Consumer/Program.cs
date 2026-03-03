@@ -3,11 +3,12 @@ using OpenTelemetry.Resources;
 using ProjectSubscriber.Extensions;
 using ProjectSubscriber.Options;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
-    .ConfigureOpenTelemetry();
+    .ConfigureOpenTelemetry()
+    .ConfigureHealthChecks();
 
 builder.Logging
     .AddOpenTelemetry(logging =>
@@ -19,6 +20,12 @@ builder.Logging
         logging.AddOtlpExporter();
     });
 
-var host = builder.Build();
+builder.WebHost.ConfigureKestrel(
+    serverOptions => { serverOptions.ListenAnyIP(8081); }
+);
 
-await host.RunAsync();
+var app = builder.Build();
+
+app.MapDefaultHealthChecks();
+
+await app.RunAsync();
