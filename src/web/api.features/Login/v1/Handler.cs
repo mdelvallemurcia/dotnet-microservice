@@ -17,11 +17,13 @@ public class Handler : IEndpointModule
             .WithTags("Auth")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
+            .AddFluentValidationAutoValidation()
+            .ProducesValidationProblem()
             .AddFluentValidationAutoValidation();
     }
 
     private static async Task<IResult> Handle(Request request, IBearerTokenGenerator bearerTokenGenerator)
     {
-        return Results.Ok(new Response { Token = bearerTokenGenerator.CreateToken(request.UserName)});
+        return Results.Ok(new Response { Token = bearerTokenGenerator.CreateToken(request.UserName) });
     }
 }

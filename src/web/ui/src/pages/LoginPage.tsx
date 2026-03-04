@@ -46,7 +46,6 @@ export const LoginPage = () => {
 
                 <form onSubmit={handleLogin}>
                     <div className="space-y-4">
-                        {/* Necesitamos actualizar el componente Input para que acepte el valor */}
                         <div className="mb-4">
                             <Input
                                 label="Username"
