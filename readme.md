@@ -6,6 +6,8 @@
 - Timeout MassTransit
 - Resilencia del http client
 - Front
+  - Agregar bearer token automáticamente
+  - Forma más segura de alma¡cenar el bearer token en local
   - Logout
   - Listado de proyectos
 

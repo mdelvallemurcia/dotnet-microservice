@@ -12,7 +12,7 @@ export const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
@@ -22,6 +22,7 @@ export const LoginPage = () => {
             login(data.token);
             navigate('/dashboard');
         } catch (err) {
+            console.error("Error detallado:", err);
             if (err instanceof Error) {
                 setError(err.message);
             } else {
