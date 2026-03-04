@@ -32,12 +32,12 @@ builder.Services
 
 builder
     .AddServiceDefaults();
-    //.AddRabbitMQClient("messaging");
+//.AddRabbitMQClient("messaging");
 
-builder.Logging    
+builder.Logging
     .AddOpenTelemetry(logging =>
     {
-        var serviceName = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME")??string.Empty;
+        var serviceName = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME") ?? string.Empty;
         logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName));
         logging.IncludeFormattedMessage = true;
         logging.IncludeScopes = true;
@@ -47,6 +47,7 @@ builder.Logging
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseCors();
 
 app.ConfigureOpenApi();
 app.ConfigureApiVersions();
