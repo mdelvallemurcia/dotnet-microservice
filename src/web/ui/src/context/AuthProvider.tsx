@@ -1,8 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { AuthContext } from '../hooks/useAuth'
+import { AuthContext } from './AuthContext'; 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    // Inicializamos comprobando si hay un token guardado
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
         !!localStorage.getItem('auth_token')
     );
