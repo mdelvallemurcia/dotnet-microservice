@@ -1,12 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-
-interface AuthContextType {
-    isAuthenticated: boolean;
-    login: (token: string) => void;
-    logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { useState, type ReactNode } from 'react';
+import { AuthContext } from '../hooks/useAuth'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Inicializamos comprobando si hay un token guardado
@@ -29,10 +22,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             {children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) throw new Error("useAuth should be used into an AuthProvider");
-    return context;
 };

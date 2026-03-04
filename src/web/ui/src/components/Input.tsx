@@ -1,6 +1,6 @@
 import type { ChangeEventHandler } from "react";
 
-export const Input = ({ label, type, placeholder, value, onChange, required }: { label: string, type: string, placeholder: string, value: string, onChange: ChangeEventHandler<T, HTMLInputElement>, required: boolean}) => (
+export const Input = ({ label, type, placeholder, value, onChange, required }: { label: string, type: string, placeholder: string, value: string, onChange: ChangeEventHandler<HTMLInputElement, HTMLInputElement>, required: boolean}) => (
     <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
         <input

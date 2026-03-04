@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api.service';
 import { Input } from "../components/Input";
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../hooks/useAuth"
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -21,8 +21,12 @@ export const LoginPage = () => {
             const data = await authService.login(username, password);            
             login(data.token);
             navigate('/dashboard');
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Unhandled error");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -46,7 +50,7 @@ export const LoginPage = () => {
                             <Input
                                 label="Username"
                                 type="text"
-                                placeholder="your username"
+                                placeholder="type your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
