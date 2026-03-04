@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api.service';
 import { Input } from "../components/Input";
+import { useAuth } from "../context/AuthContext"
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ export const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -16,12 +18,8 @@ export const LoginPage = () => {
         setIsLoading(true);
 
         try {
-            const data = await authService.login(username, password);
-            console.log("Login success:", data);
-
-            // Guardar token si es necesario
-            // localStorage.setItem('token', data.token);
-
+            const data = await authService.login(username, password);            
+            login(data.token);
             navigate('/dashboard');
         } catch (err: any) {
             setError(err.message);
@@ -72,7 +70,7 @@ export const LoginPage = () => {
                         disabled={isLoading}
                         className={`w-full text-white font-bold py-3 rounded-lg transition-colors mt-4 ${isLoading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                     >
-                        {isLoading ? 'Conecting...' : 'Login'}
+                        {isLoading ? 'Connecting...' : 'Login'}
                     </button>
                 </form>
             </div>

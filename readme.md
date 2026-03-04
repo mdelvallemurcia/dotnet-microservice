@@ -5,6 +5,9 @@
 - console project - Hosting environment: Production
 - Timeout MassTransit
 - Resilencia del http client
+- Front
+  - Logout
+  - Listado de proyectos
 
 
 # Diagram

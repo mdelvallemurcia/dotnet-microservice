@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const Dashboard = () => (
     <div className="p-8">
@@ -10,18 +12,18 @@ const Dashboard = () => (
 
 function App() {
     return (
-        <BrowserRouter>
-            <Routes>
-                {/* Ruta pública */}
-                <Route path="/login" element={<LoginPage />} />
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="*" element={<Navigate to="/login" replace />} />
 
-                {/* Ruta privada (simulada por ahora) */}
-                <Route path="/dashboard" element={<Dashboard />} />
-
-                {/* Redirección por defecto: si no sabe a dónde ir, al login */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-        </BrowserRouter>
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                    </Route>                    
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
     );    
 }
 
