@@ -10,6 +10,7 @@
   - Forma más segura de alma¡cenar el bearer token en local
   - Logout
   - Listado de proyectos
+  - Configuración general del proyecto: url del api, url por defecto el logearse...
 
 
 # Diagram

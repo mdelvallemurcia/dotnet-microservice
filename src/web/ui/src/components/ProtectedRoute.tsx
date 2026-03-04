@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { DashboardLayout } from '../layouts/DashboardLayout';
 
 export const ProtectedRoute = () => {
     const { isAuthenticated } = useAuth();
@@ -10,5 +11,9 @@ export const ProtectedRoute = () => {
     }
 
     // Si está autenticado, renderiza el contenido hijo (Dashboard)
-    return <Outlet />;
+    return (
+        <DashboardLayout>
+            <Outlet />
+        </DashboardLayout>
+    );
 };

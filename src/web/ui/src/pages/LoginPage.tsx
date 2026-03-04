@@ -20,9 +20,9 @@ export const LoginPage = () => {
         try {
             const data = await authService.login(username, password);            
             login(data.token);
-            navigate('/dashboard');
+            navigate('/home');
         } catch (err) {
-            console.error("Error detallado:", err);
+            console.error("Error details:", err);
             if (err instanceof Error) {
                 setError(err.message);
             } else {
@@ -50,7 +50,7 @@ export const LoginPage = () => {
                             <Input
                                 label="Username"
                                 type="text"
-                                placeholder="type your username"
+                                placeholder="Please, type your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
