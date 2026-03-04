@@ -11,7 +11,7 @@
   - Logout
   - Listado de proyectos
   - Configuración general del proyecto: url del api, url por defecto el logearse...
-
+  - Importar de una todas las páginas/componentes de un directorio
 
 # Diagram
 ```mermaid
