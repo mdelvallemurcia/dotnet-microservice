@@ -14,15 +14,16 @@
 
 # Diagram
 ```mermaid
-flowchart TD
-    A[☁️ Api]
-    B(🐰 RabbitMq)
-    C(🌿 MongoDb)
-    D[⚙️ ProjectSubscriber]
+flowchart LR
+    WEB[💻 Web]
+    API[☁️ Api]
+    PROJECT_SUBSCRIBER[⚙️ ProjectSubscriber]
+    RABBIT(🐰 RabbitMq)
+    MONGO(🌿 MongoDb)
 
-    A --> B
-    A --> C
-    D --> B
-    D --> C    
-    
+    API --> RABBIT
+    API --> MONGO
+    RABBIT --> PROJECT_SUBSCRIBER
+    PROJECT_SUBSCRIBER --> MONGO
+    WEB --> API
 ```
