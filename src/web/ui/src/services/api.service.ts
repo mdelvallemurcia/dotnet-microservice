@@ -1,5 +1,5 @@
 // En el futuro, esto vendrá de import.meta.env.VITE_API_URL
-const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:7035';
+const API_URL = import.meta.env.API_HTTPS | import.meta.env.VITE_API_URL || 'https://localhost:7035';
 
 export const authService = {
     login: async (username: string, password: string) => {
