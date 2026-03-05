@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Models.Dto;
 using Models.Entity;
 using MongoDB.Driver;
 
@@ -34,6 +35,39 @@ public class MongoRepository<T> : IRepository<T> where T : BaseEntity
         return _collection
             .Find(filter)
             .ToListAsync(ct);
+    }
+
+    public async Task<PagedData<T>> GetPagedAsync(
+            int page,
+            int pageSize,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
+            bool ascending = true)
+    {
+        filter ??= _ => true;
+
+        var query = _collection.Find(filter);
+
+        if (orderBy != null)
+        {
+            query = ascending
+                ? query.SortBy(orderBy)
+                : query.SortByDescending(orderBy);
+        }
+
+        var totalItems = await query.CountDocumentsAsync();
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync();
+
+        return new PagedData<T>(
+            items,
+            page,
+            pageSize,
+            totalItems
+        );
     }
 
     public Task InsertAsync(T entity, CancellationToken ct = default)

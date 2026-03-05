@@ -3,6 +3,7 @@ using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Models.Entity;
@@ -24,11 +25,18 @@ public class Handler : IEndpointModule
 
     internal static async Task<IResult> Handle(
         IRepository<Project> projectRepository,
-        ILogger<Handler> logger
+        ILogger<Handler> logger,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
     )
     {
         logger.LogInformation("Getting projects");
-        var projects = await projectRepository.GetAllAsync();
-        return Results.Ok(projects);
+
+        var pagedData = await projectRepository.GetPagedAsync(
+            page,
+            pageSize
+        );
+
+        return Results.Ok(pagedData);
     }
 }
