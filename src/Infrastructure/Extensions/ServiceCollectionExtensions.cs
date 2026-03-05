@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
             return client.GetDatabase(mongoDbOptions.DatabaseName);
         });
 
-        services.AddScoped(typeof(IRepository<>), typeof(MongoRepository<>));
+        services.AddScoped(typeof(IRepository<>), typeof(MongoDbRepository<>));
 
         return services;
     }

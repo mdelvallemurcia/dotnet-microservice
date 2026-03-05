@@ -5,11 +5,11 @@ using MongoDB.Driver;
 
 namespace Infrastructure.Repository;
 
-public class MongoRepository<T> : IRepository<T> where T : BaseEntity
+public class MongoDbRepository<T> : IRepository<T> where T : BaseEntity
 {
     private readonly IMongoCollection<T> _collection;
 
-    public MongoRepository(IMongoDatabase database)
+    public MongoDbRepository(IMongoDatabase database)
     {
         var collectionName = typeof(T).Name.ToLowerInvariant();
         _collection = database.GetCollection<T>(collectionName);
@@ -55,18 +55,20 @@ public class MongoRepository<T> : IRepository<T> where T : BaseEntity
                 : query.SortByDescending(orderBy);
         }
 
-        var totalItems = await query.CountDocumentsAsync();
+        var totalItemsTask = query.CountDocumentsAsync();
 
-        var items = await query
+        var itemsTask = query
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
 
+        await Task.WhenAll(totalItemsTask, itemsTask);
+
         return new PagedData<T>(
-            items,
+            await itemsTask,
             page,
             pageSize,
-            totalItems
+            await totalItemsTask
         );
     }
 
