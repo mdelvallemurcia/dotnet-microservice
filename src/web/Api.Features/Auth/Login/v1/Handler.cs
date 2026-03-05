@@ -1,11 +1,12 @@
-﻿using Api.Features.Shared.Auth;
+﻿using Api.Features.Login.v1;
+using Api.Features.Shared.Auth;
 using Asp.Versioning.Builder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
-namespace Api.Features.Login.v1;
+namespace Api.Features.Auth.Login.v1;
 
 public class Handler : IEndpointModule
 {

@@ -1,7 +1,7 @@
 ﻿using Models.Entity;
 using Models.Events.Project;
 
-namespace Api.Features.ProjectAdd.v1;
+namespace Api.Features.Project.ProjectAdd.v1;
 
 internal static class Mapper
 {

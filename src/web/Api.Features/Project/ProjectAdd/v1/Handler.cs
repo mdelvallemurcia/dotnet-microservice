@@ -9,7 +9,7 @@ using Models.Entity;
 using Models.Events.Project;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
-namespace Api.Features.ProjectAdd.v1;
+namespace Api.Features.Project.ProjectAdd.v1;
 
 public class Handler : IEndpointModule
 {

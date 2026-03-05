@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Api.Features.Login.v1;
+namespace Api.Features.Auth.Login.v1;
 
 public class Validator : AbstractValidator<Request>
 {

@@ -1,4 +1,4 @@
-﻿namespace Api.Features.ProjectsGet.v1;
+﻿namespace Api.Features.Project.ProjectsGet.v1;
 
 public class Response
 {

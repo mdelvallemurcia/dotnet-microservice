@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Api.Features.ProjectAdd.v1;
+namespace Api.Features.Project.ProjectAdd.v1;
 
 public class Validator : AbstractValidator<Request>
 {
