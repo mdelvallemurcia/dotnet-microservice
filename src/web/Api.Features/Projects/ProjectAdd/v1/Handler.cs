@@ -9,7 +9,7 @@ using Models.Entity;
 using Models.Events.Project;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
-namespace Api.Features.Project.ProjectAdd.v1;
+namespace Api.Features.Projects.ProjectAdd.v1;
 
 public class Handler : IEndpointModule
 {
@@ -21,15 +21,14 @@ public class Handler : IEndpointModule
             .WithTags("Project")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
-            .AddFluentValidationAutoValidation()
-            .RequireAuthorization();
+            .AddFluentValidationAutoValidation();
     }
 
     internal static async Task<IResult> Handle(
-        Request request, 
-        IPublishEndpoint publishEndpoint, 
-        IRepository<Project> projectRepository, 
-        IRepository<EventFailure<ProjectAdded>> eventFailureRepository, 
+        Request request,
+        IPublishEndpoint publishEndpoint,
+        IRepository<Project> projectRepository,
+        IRepository<EventFailure<ProjectAdded>> eventFailureRepository,
         ILogger<Handler> logger,
         CancellationToken cancellationToken)
     {
@@ -55,5 +54,5 @@ public class Handler : IEndpointModule
 
         logger.LogInformation("Project created: {ProjectId}", project.Id);
         return Results.Accepted();
-    } 
+    }
 }

@@ -3,7 +3,7 @@ using Asp.Versioning.Builder;
 
 namespace Api.Extensions;
 
-public static class EndpointDiscoveryExtensions
+internal static class EndpointDiscoveryExtensions
 {
     public static void MapDiscoveredEndpoints(this IEndpointRouteBuilder app, ApiVersionSet versionSet)
     {

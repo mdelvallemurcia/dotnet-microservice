@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Models.Entity;
 
-namespace Api.Features.Project.ProjectsGet.v1;
+namespace Api.Features.Projects.ProjectsGet.v1;
 
 public class Handler : IEndpointModule
 {

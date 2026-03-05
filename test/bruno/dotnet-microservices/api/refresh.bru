@@ -1,0 +1,27 @@
+meta {
+  name: refresh
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{urlApi}}/v1/refresh
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "token": "o3KPQwW7weEHd0q4eG2txTEGg3f/JR8XlLqg3JLkos4=POTATO"
+  }
+}
+
+script:post-response {
+  const response = res.getBody();
+  bru.setEnvVar("auth_token", response.token);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

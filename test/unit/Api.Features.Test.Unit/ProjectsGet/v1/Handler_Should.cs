@@ -1,4 +1,4 @@
-﻿using Api.Features.Project.ProjectsGet.v1;
+﻿using Api.Features.Projects.ProjectsGet.v1;
 using Infrastructure.Repository;
 using Microsoft.Extensions.Logging;
 using Models.Entity;

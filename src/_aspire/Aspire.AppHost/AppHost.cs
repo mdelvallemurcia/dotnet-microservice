@@ -11,8 +11,8 @@ var rabbitmq = builder
     .WithEnvironment("RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS", "-rabbitmq_management load_definitions \"/etc/rabbitmq/rabbitmq-definitions.json\""); ;
 
 var mongoDb = builder
-    .AddMongoDB("MongoDb", 27017);
-//.WithMongoExpress();
+    .AddMongoDB("MongoDb", 27017)
+    .WithMongoExpress();
 
 var lgtm = builder
     .AddContainer("lgtm", "grafana/otel-lgtm")

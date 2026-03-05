@@ -1,9 +1,10 @@
-﻿using Api.Features.Login.v1;
-using Api.Features.Shared.Auth;
+﻿using Api.Features.Services.Auth;
 using Asp.Versioning.Builder;
+using Infrastructure.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Models.Entity;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 namespace Api.Features.Auth.Login.v1;
@@ -20,11 +21,31 @@ public class Handler : IEndpointModule
             .MapToApiVersion(1, 0)
             .AddFluentValidationAutoValidation()
             .ProducesValidationProblem()
-            .AddFluentValidationAutoValidation();
+            .AddFluentValidationAutoValidation()
+            .AllowAnonymous();
     }
 
-    private static async Task<IResult> Handle(Request request, IBearerTokenGenerator bearerTokenGenerator)
+    private static async Task<IResult> Handle(
+        HttpContext httpContext,
+        Request request,
+        IAuthFacade authGenerator,
+        IRepository<RefreshToken> refreshTokenRepository
+    )
     {
-        return Results.Ok(new Response { Token = bearerTokenGenerator.CreateToken(request.UserName) });
+        if (!request.UserName.Equals("miguelito") || !request.Password.Equals("sdlkfj298LJ!"))
+            return Results.BadRequest();
+
+        var fingerprint = authGenerator.GenerateFingerprint(httpContext);
+        var accessToken = authGenerator.GenerateAccessToken(request.UserName, fingerprint);
+        var refreshToken = authGenerator.GenerateRefreshToken(request.UserName);
+
+        var refreshTokenEntity = request.ToRefreshToken(refreshToken, httpContext, authGenerator);
+        await refreshTokenRepository.InsertAsync(refreshTokenEntity);
+
+        authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.Fingerprint, fingerprint);
+        authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.RefreshToken, refreshToken);
+
+        return Results.Ok(new Response { AccessToken = accessToken, RefreshToken = refreshToken });
     }
+
 }

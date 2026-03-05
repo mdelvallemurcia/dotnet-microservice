@@ -1,3 +1,4 @@
+using api.Middleware;
 using api.Options;
 using Api.Common;
 using Api.Extensions;
@@ -17,9 +18,9 @@ builder.Services.AddOpenApi();
 
 builder.Services
     .ConfigureApiVersioning()
-    .ConfigureBearerTokenGenerator()
+    .ConfigureAuthGenerator()
     .ConfigureAuthentication(builder.Configuration.GetSection(BearerTokenOptions.Section).Get<BearerTokenOptions>()!)
-    .AddAuthorization()
+    .ConfigureAuthorization()
     .ConfigureProblemDetails()
     .AddExceptionHandler<GlobalExceptionHandler>()
     .AddFluentValidationAutoValidation()
@@ -47,14 +48,17 @@ builder.Logging
 var app = builder.Build();
 
 app.UseExceptionHandler();
-app.UseCors();
+app.UseCors("DefaultPolicy");
+//app.ConfigureContentSecurityPolicy(); //TODO check!! ---------------------
+
+app.UseMiddleware<FingerprintValidationMiddleware>();
 
 app.ConfigureOpenApi();
-app.ConfigureApiVersions();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapDefaultHealthChecks();
+app.MapEndpointsAndConfigureApiVersions();
 
 app.Run();

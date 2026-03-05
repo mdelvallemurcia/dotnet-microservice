@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Security.Cryptography;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
 
@@ -6,9 +7,9 @@ namespace Api.Extensions;
 
 public static class WebApplicationExtensions
 {
-    private const string HealthEndpointPath = "/health";
-    private const string AlivenessEndpointPath = "live";
-    private const string ReadynessEndpointPath = "ready";
+    private const string _healthEndpointPath = "/health";
+    private const string _alivenessEndpointPath = "live";
+    private const string _readynessEndpointPath = "ready";
 
     public static WebApplication ConfigureOpenApi(this WebApplication app)
     {
@@ -26,7 +27,7 @@ public static class WebApplicationExtensions
         return app;
     }
 
-    public static WebApplication ConfigureApiVersions(this WebApplication app)
+    public static WebApplication MapEndpointsAndConfigureApiVersions(this WebApplication app)
     {
         var versionSet = app.NewApiVersionSet()
             .HasApiVersion(new ApiVersion(1, 0))
@@ -35,7 +36,7 @@ public static class WebApplicationExtensions
             .Build();
 
         app.MapDiscoveredEndpoints(versionSet);
-        
+
         return app;
     }
 
@@ -44,18 +45,18 @@ public static class WebApplicationExtensions
         var isDevelopment = app.Environment.IsDevelopment();
 
         app.MapHealthChecks(
-            $"{HealthEndpointPath}/{AlivenessEndpointPath}", 
+            $"{_healthEndpointPath}/{_alivenessEndpointPath}",
             new HealthCheckOptions
             {
-                Predicate = check => check.Tags.Contains(AlivenessEndpointPath)
+                Predicate = check => check.Tags.Contains(_alivenessEndpointPath)
             }
         );
 
         app.MapHealthChecks(
-            $"{HealthEndpointPath}/{ReadynessEndpointPath}", 
+            $"{_healthEndpointPath}/{_readynessEndpointPath}",
             new HealthCheckOptions
             {
-                Predicate = check => check.Tags.Contains(ReadynessEndpointPath),
+                Predicate = check => check.Tags.Contains(_readynessEndpointPath),
                 ResponseWriter = async (context, report) =>
                 {
                     context.Response.ContentType = "application/json";
@@ -74,6 +75,44 @@ public static class WebApplicationExtensions
                 }
             }
         );
+
+        return app;
+    }
+
+    public static WebApplication ConfigureContentSecurityPolicy(this WebApplication app)
+    {
+        var isDevelopment = app.Environment.IsDevelopment();
+        var apiDomain = "localhost:0000";
+
+        // https://csp-evaluator.withgoogle.com/
+        var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+
+
+        app.Use(async (context, next) =>
+        {
+            var headers = context.Response.Headers;
+            headers.Append("X-Frame-Options", "DENY");
+            headers.Append("X-Content-Type-Options", "nosniff");
+            headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+
+            context.Items["CSPNonce"] = nonce;
+
+            headers.Append(
+                "Content-Security-Policy",
+                    $"default-src 'self'; script-src 'self' 'nonce-{nonce}';" +
+                    (isDevelopment ? $"script-src 'self' 'unsafe-eval' 'unsafe-inline' https://{apiDomain};" : "script-src 'self'; ") +
+                    "style-src 'self' 'unsafe-inline'; " +
+                    "img-src 'self' data:; " +
+                    "font-src 'self'; " +
+                    (isDevelopment ? $"connect-src 'self' https://{apiDomain} ws://{apiDomain};" : $"connect-src 'self' https://{apiDomain}; ") +
+                    "frame-ancestors 'none'; " +
+                    "object-src 'none'; " +
+                    "base-uri 'self'; " +
+                    "form-action 'self';"
+            );
+
+            await next();
+        });
 
         return app;
     }

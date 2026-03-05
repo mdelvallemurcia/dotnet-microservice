@@ -1,8 +1,8 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Features.Shared.Auth;
 
@@ -46,5 +46,5 @@ public class BearerTokenGenerator : IBearerTokenGenerator
 
 public interface IBearerTokenGenerator
 {
-       string CreateToken(string userId);
+    string CreateToken(string userId);
 }

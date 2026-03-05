@@ -1,19 +1,13 @@
 using System.Diagnostics;
 using System.Text;
-
 using api.MassTransit;
 using api.Options;
-
 using Api.Features.Shared.Auth;
-
 using Asp.Versioning;
-
 using MassTransit;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
@@ -39,13 +33,13 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection ConfigureBearerTokenGenerator(this IServiceCollection services)
+    public static IServiceCollection ConfigureAuthGenerator(this IServiceCollection services)
     {
         services
             .AddOptions<BearerTokenOptions>()
             .BindConfiguration(BearerTokenOptions.Section);
 
-        services.AddSingleton<IBearerTokenGenerator, BearerTokenGenerator>();
+        services.AddSingleton<Api.Features.Services.Auth.IAuthFacade, Api.Features.Services.Auth.AuthFacade>();
 
         return services;
     }
@@ -104,13 +98,18 @@ internal static class ServiceCollectionExtensions
         services
             .AddCors(options =>
             {
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
+                options.AddPolicy(
+                    "DefaultPolicy",
+                    builder =>
+                    {
+                        builder
+                            .WithOrigins("http://localhost:5173") //TODO configure!
+                                                                  //.AllowAnyOrigin()
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .AllowCredentials();
+                    }
+                );
             });
         return services;
     }
@@ -215,4 +214,24 @@ internal static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection ConfigureAuthorization(this IServiceCollection services)
+    {
+        services.AddAuthorization(options => { options.FallbackPolicy = options.DefaultPolicy; });
+
+        return services;
+    }
+
+    //public static IServiceCollection ConfigureBffSession(this IServiceCollection services)
+    //{
+    //    return services.AddSession(
+    //        options =>
+    //        {
+    //            options.Cookie.Name = "__Host-bff-session";
+    //            options.Cookie.HttpOnly = true;
+    //            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    //            options.Cookie.SameSite = SameSiteMode.Strict;
+    //            options.IdleTimeout = TimeSpan.FromMinutes(30);
+    //        });
+    //}
 }
