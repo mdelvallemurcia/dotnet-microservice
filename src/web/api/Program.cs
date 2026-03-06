@@ -18,7 +18,7 @@ builder.Services.AddOpenApi();
 
 builder.Services
     .ConfigureApiVersioning()
-    .ConfigureAuthGenerator()
+    .AddInternalServices()
     .ConfigureAuthentication(builder.Configuration.GetSection(BearerTokenOptions.Section).Get<BearerTokenOptions>()!)
     .ConfigureAuthorization()
     .ConfigureProblemDetails()

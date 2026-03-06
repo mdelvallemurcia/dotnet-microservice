@@ -12,9 +12,7 @@ export const LoginPage = () => {
 
     const { loading, error, refetch: executeLogin } = useFetch<{ accessToken: string }>(
         '/v1/login',
-        {
-            method: 'POST'
-        }
+        { method: 'POST' }
     );
 
     const handleLogin = async (e: React.SyntheticEvent) => {
@@ -65,7 +63,7 @@ export const LoginPage = () => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
-                            errorMessage={getFieldError('UserName') || getFieldError('userName')}
+                            errorMessage={getFieldError('UserName') }
                         />
 
                         <Input
@@ -75,7 +73,7 @@ export const LoginPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            errorMessage={getFieldError('Password') || getFieldError('password')}
+                            errorMessage={getFieldError('Password') }
                         />
                     </div>
 

@@ -1,34 +1,29 @@
 import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { PaginatedTable } from '../components/PaginatedTable';
-
-interface Project {
-    id: string;
-    name: string;    
-    createdAt: string;
-}
-
-interface ApiResponse {
-    items: Project[];
-    totalPages: number;
-}
+import type { PagedData } from '../types/pagedData'
+import type { ProjectEntity } from '../types/projects'
 
 export const ProjectsPage = () => {
     const [page, setPage] = useState(1);
 
     // Llamada a tu API de .NET (ej: http://localhost:5000/api/projects)
-    const { data, loading, error } = useFetch<ApiResponse>('/api/projects', {
-        page,
-        pageSize: 5
-    });
+    //const { data, loading, error } = useFetch<ApiResponse>('/v1/projects'{
+    //    page,
+    //    pageSize: 5
+    //});
+    const { loading, data  } = useFetch<PagedData<ProjectEntity>>(
+        '/v1/projects',
+        { method: 'GET' }
+    );
 
-    const columns = [
-        { header: 'ID', key: 'id' as keyof Project },
-        { header: 'Nombre del Proyecto', key: 'name' as keyof Project },        
-        { header: 'Fecha', key: 'createdAt' as keyof Project },
+    const columns: { header: string; key: keyof ProjectEntity }[] = [
+        { header: 'ID'              , key: 'id'           },
+        { header: 'Name'            , key: 'name'         },        
+        { header: 'Creation date'   , key: 'creationDate' },
     ];
 
-    if (error) return <div className="text-red-500">Error: {error}</div>;
+    //if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
         <div className="space-y-6">

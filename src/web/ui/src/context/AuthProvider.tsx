@@ -37,7 +37,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const silentRefresh = async () => {
 
             const hasRefreshToken = localStorage.getItem("refreshTokenPresent");
-
             if (!hasRefreshToken) {
                 setIsInitialLoading(false);
                 return;

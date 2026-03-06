@@ -1,6 +1,5 @@
 ﻿using Asp.Versioning.Builder;
 using Infrastructure.Repository;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +19,7 @@ public class Handler : IEndpointModule
             .WithTags("Project")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
-            .RequireAuthorization(new AuthorizeAttribute { Roles = "Reader" });
+            .RequireAuthorization("RequireReader");
     }
 
     internal static async Task<IResult> Handle(

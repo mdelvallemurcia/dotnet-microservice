@@ -22,7 +22,7 @@ export function PaginatedTable<T>({ data, columns, currentPage, totalPages, onPa
                 </thead>
                 <tbody className="divide-y">
                     {isLoading ? (
-                        <tr><td colSpan={columns.length} className="p-10 text-center">Cargando datos...</td></tr>
+                        <tr><td colSpan={columns.length} className="p-10 text-center">Loading data...</td></tr>
                     ) : (
                         data.map((item, idx) => (
                             <tr key={idx} className="hover:bg-gray-50">
@@ -44,15 +44,15 @@ export function PaginatedTable<T>({ data, columns, currentPage, totalPages, onPa
                     onClick={() => onPageChange(currentPage - 1)}
                     className="px-4 py-2 border rounded disabled:opacity-50 bg-white"
                 >
-                    Anterior
+                    Previous
                 </button>
-                <span className="text-sm text-gray-600">Página {currentPage} de {totalPages}</span>
+                <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
                 <button
                     disabled={currentPage === totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
                     className="px-4 py-2 border rounded disabled:opacity-50 bg-white"
                 >
-                    Siguiente
+                    Next
                 </button>
             </div>
         </div>

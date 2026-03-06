@@ -19,7 +19,7 @@ body:json {
 
 script:post-response {
   const response = res.getBody();
-  bru.setEnvVar("auth_token", response.token);
+  bru.setEnvVar("auth_token", response.accessToken);
 }
 
 settings {

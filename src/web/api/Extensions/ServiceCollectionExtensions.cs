@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using System.Text;
+using api.AuthenticationHandlers;
 using api.MassTransit;
 using api.Options;
 using Api.Features.Shared.Auth;
 using Asp.Versioning;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
@@ -33,13 +36,14 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection ConfigureAuthGenerator(this IServiceCollection services)
+    public static IServiceCollection AddInternalServices(this IServiceCollection services)
     {
         services
             .AddOptions<BearerTokenOptions>()
             .BindConfiguration(BearerTokenOptions.Section);
 
-        services.AddSingleton<Api.Features.Services.Auth.IAuthFacade, Api.Features.Services.Auth.AuthFacade>();
+        services.AddSingleton<Features.Services.Auth.IAuthFacade, Features.Services.Auth.AuthFacade>();
+        services.AddSingleton(TimeProvider.System); // HMAC, necessary?
 
         return services;
     }
@@ -49,8 +53,23 @@ internal static class ServiceCollectionExtensions
         services
             .AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = "DynamicAuth";
+                options.DefaultChallengeScheme = "DynamicAuth";
+            })
+            .AddPolicyScheme("DynamicAuth", "Bearer or HMAC", options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    var authHeader = context.Request.Headers.Authorization.ToString();
+
+                    if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        return JwtBearerDefaults.AuthenticationScheme;
+
+                    if (authHeader.StartsWith("ldx ", StringComparison.OrdinalIgnoreCase))
+                        return "HMAC";
+
+                    return JwtBearerDefaults.AuthenticationScheme;
+                };
             })
             .AddJwtBearer(options =>
             {
@@ -58,6 +77,7 @@ internal static class ServiceCollectionExtensions
                 {
                     OnAuthenticationFailed = context =>
                     {
+                        //TODO! - warning????
                         Console.WriteLine("Auth fail! " + context.Exception.Message);
                         return Task.CompletedTask;
                     }
@@ -66,13 +86,45 @@ internal static class ServiceCollectionExtensions
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
                     ValidIssuer = bearerTokenOptions.Issuer,
+
+                    ValidateAudience = true,
                     ValidAudience = bearerTokenOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(bearerTokenOptions.SecretKey))
+
+                    ValidateLifetime = true,
+
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(bearerTokenOptions.SecretKey)),
+                    ValidAlgorithms = [SecurityAlgorithms.HmacSha512],
+
+                    ClockSkew = TimeSpan.FromSeconds(30)
                 };
+            })
+            .AddScheme<AuthenticationSchemeOptions, HmacAuthenticationHandler>(
+                "HMAC", options => { }
+            );
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureAuthorization(this IServiceCollection services)
+    {
+        services
+            .AddAuthorizationBuilder()
+            .SetFallbackPolicy(
+                new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build()
+            )
+            .AddPolicy("RequireAdmin", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("role", "admin");
+            })
+            .AddPolicy("RequireReader", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("role", ["admin", "reader"]);
             });
 
         return services;
@@ -211,13 +263,6 @@ internal static class ServiceCollectionExtensions
         {
             options.WaitUntilStarted = false;
         });
-
-        return services;
-    }
-
-    public static IServiceCollection ConfigureAuthorization(this IServiceCollection services)
-    {
-        services.AddAuthorization(options => { options.FallbackPolicy = options.DefaultPolicy; });
 
         return services;
     }

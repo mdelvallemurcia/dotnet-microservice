@@ -22,14 +22,16 @@ public class AuthFacade : IAuthFacade
     {
         var options = _optionsMonitor.CurrentValue;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.SecretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId),
             new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
-            new(ClaimTypes.Role, "Reader"),
+            new(ClaimTypes.Role, "reader"),
+            new(ClaimTypes.Role, "writer"),
             new("fp", fingerprint),
+            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -38,7 +40,8 @@ public class AuthFacade : IAuthFacade
             Expires = DateTime.UtcNow.AddMinutes(options.ExpirationInMinutes),
             Issuer = options.Issuer,
             Audience = options.Audience,
-            SigningCredentials = creds
+            SigningCredentials = creds,
+            NotBefore = DateTime.UtcNow
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();

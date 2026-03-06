@@ -20,8 +20,10 @@
   - Configuración general del proyecto: url del api, url por defecto el logearse, config del grid...
   - Importar de una todas las páginas/componentes de un directorio
   - Repositoriuo de Mongo modifica N elementos (HandleReuseAttack example)
-  - Índices mongo
+  - errorMessage se lanza siempre y solo debería hacerlo después de lanzar el form
   - CSS más semánticos (bgc-validation-error...)
+  - 
+  - Índices mongo
 ``` csharp
 await collection.Indexes.CreateManyAsync([
     new CreateIndexModel<RefreshToken>(
