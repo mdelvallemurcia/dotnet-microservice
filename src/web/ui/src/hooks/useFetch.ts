@@ -7,7 +7,7 @@ interface FetchOptions {
     params?: Record<string, string | number>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:7035';
+const API_URL = import.meta.env.VITE_API_URL;
 
 //const controller = new AbortController();
 //setTimeout(() => controller.abort(), 5000);
@@ -15,7 +15,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:7035';
 
 export function useFetch<T>(url: string, options: FetchOptions = {}) {
     const [data, setData] = useState<T | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { accessToken, afterLoginActions, afterLogoutActions } = useAuth();
 
@@ -51,7 +51,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
 
                 // --- MANEJO DE TOKEN EXPIRADO ---
                 if (response.status === 401 && !isRetry) {
-                    console.log("Access Token expirado, intentando refresh...");
+                    console.log("Access Token expired, trying to refresh...");
 
                     const refreshRes = await fetch(`${API_URL}/v1/refresh`, {
                         method: 'POST',
@@ -67,7 +67,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
                     } else {
                         // Si el refresh falla, la sesión es irrecuperable
                         afterLogoutActions();
-                        throw new Error("Su sesión ha expirado. Por favor, vuelva a entrar.");
+                        throw new Error("Session expired. Please login again.");
                     }
                 }
 
@@ -82,7 +82,10 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
                 return result;
             } catch (err: unknown) {
                 if (err instanceof Error) {
-                    setError(err.message);
+                    if (err.message == 'Error 400')
+                        setError('Validation error, please check your data');
+                    else
+                        setError(err.message);
                     console.error("Request error:", err.message);
                 }
                 else if (typeof err === 'string') {

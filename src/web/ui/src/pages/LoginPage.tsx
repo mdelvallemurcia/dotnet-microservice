@@ -10,7 +10,7 @@ export const LoginPage = () => {
     const [password, setPassword] = useState('');
     const { afterLoginActions } = useAuth();
 
-    const { loading, error, refetch: executeLogin } = useFetch<{ token: string }>(
+    const { loading, error, refetch: executeLogin } = useFetch<{ accessToken: string }>(
         '/v1/login',
         {
             method: 'POST'
@@ -24,10 +24,11 @@ export const LoginPage = () => {
         });
 
         // Si el hook devolvió datos (login exitoso)
-        if (result && result.token) {
-            afterLoginActions(result.token);
+        if (result && result.accessToken) {
+            afterLoginActions(result.accessToken);
             navigate('/home');
         }
+        // Manage response
     };
 
     return (
