@@ -11,7 +11,7 @@ internal class FingerprintValidationMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        if (!context.User.Identity.IsAuthenticated)
+        if (context.User.Identity?.IsAuthenticated != true)
         {
             await _next(context);
             return;
@@ -20,10 +20,14 @@ internal class FingerprintValidationMiddleware
         var tokenFingerprint = context.User.FindFirst("fp")?.Value;
         var cookieFingerprint = context.Request.Cookies["fp"];
 
-        if (tokenFingerprint != cookieFingerprint)
+        if (string.IsNullOrEmpty(tokenFingerprint) || tokenFingerprint != cookieFingerprint)
         {
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Invalid fingerprint");
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                title = "Invalid fingerprint",
+                status = StatusCodes.Status401Unauthorized
+            });
             return;
         }
 

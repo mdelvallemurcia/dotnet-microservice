@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
+import type { ProblemDetails } from '../types/api';
 
 interface FetchOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -16,7 +17,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export function useFetch<T>(url: string, options: FetchOptions = {}) {
     const [data, setData] = useState<T | null>(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | ProblemDetails | null>(null);
     const { accessToken, afterLoginActions, afterLogoutActions } = useAuth();
 
     const executeFetch = useCallback(
@@ -24,10 +25,10 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
             setLoading(true);
             const currentOptions = { ...options, ...manualOptions };
 
-            try {
+            try
+            {
                 const fullUrl = new URL(url.startsWith('http') ? url : `${API_URL}${url}`);
 
-                // Agregar params si existen
                 if (currentOptions.params) {
                     Object.entries(currentOptions.params).forEach(([key, val]) => {
                         fullUrl.searchParams.append(key, String(val));
@@ -48,54 +49,53 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
                 }
 
                 const response = await fetch(fullUrl.toString(), fetchConfig);
+                const hasRefreshToken = localStorage.getItem("refreshTokenPresent");
 
-                // --- MANEJO DE TOKEN EXPIRADO ---
-                if (response.status === 401 && !isRetry) {
-                    console.log("Access Token expired, trying to refresh...");
+                if (response.status === 401 && !isRetry && hasRefreshToken) {
+                    console.log("Access Token expired, trying to refresh...");                    
 
-                    const refreshRes = await fetch(`${API_URL}/v1/refresh`, {
+                    const refreshRespose = await fetch(`${API_URL}/v1/refresh`, {
                         method: 'POST',
                         credentials: 'include',
                     });
 
-                    if (refreshRes.ok) {
-                        const refreshData = await refreshRes.json();
-                        afterLoginActions(refreshData.accessToken); // Guardamos el nuevo token en memoria
+                    if (refreshRespose.ok) {
+                        const refreshData = await refreshRespose.json();
+                        afterLoginActions(refreshData.accessToken);
 
-                        // REINTENTO: Llamamos de nuevo a executeFetch pasando isRetry = true
                         return await executeFetch(manualOptions, true);
-                    } else {
-                        // Si el refresh falla, la sesión es irrecuperable
+                    }
+                    else {
                         afterLogoutActions();
                         throw new Error("Session expired. Please login again.");
                     }
                 }
 
+                const result = await response.json().catch(() => null);
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Error ${response.status}`);
+                    if (result && (result.title || result.errors)) {
+                        setError(result as ProblemDetails);
+                        throw new Error("API_PROBLEM_DETAILS");                        
+                    }
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
-
-                const result = await response.json();
+                
                 setData(result);
                 setError(null);
                 return result;
-            } catch (err: unknown) {
-                if (err instanceof Error) {
-                    if (err.message == 'Error 400')
-                        setError('Validation error, please check your data');
-                    else
+            }
+            catch (err: unknown) {
+                if (err instanceof Error) {                    
+                    if (err.message !== "API_PROBLEM_DETAILS") {
                         setError(err.message);
+                    }
                     console.error("Request error:", err.message);
-                }
-                else if (typeof err === 'string') {
-                    setError(err);
-                }
-                else {
+                } else {
                     setError("Unhandled error");
                 }
                 return null;
-            } finally {
+            }
+            finally {
                 setLoading(false);
             }
         },

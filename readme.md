@@ -21,7 +21,7 @@
   - Importar de una todas las páginas/componentes de un directorio
   - Repositoriuo de Mongo modifica N elementos (HandleReuseAttack example)
   - Índices mongo
-  
+  - CSS más semánticos (bgc-validation-error...)
 ``` csharp
 await collection.Indexes.CreateManyAsync([
     new CreateIndexModel<RefreshToken>(

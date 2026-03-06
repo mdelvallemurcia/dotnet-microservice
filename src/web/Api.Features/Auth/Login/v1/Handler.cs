@@ -33,7 +33,12 @@ public class Handler : IEndpointModule
     )
     {
         if (!request.UserName.Equals("miguelito") || !request.Password.Equals("sdlkfj298LJ!"))
-            return Results.BadRequest();
+            return Results.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    { "UserName", [ "Invalid data" ] },
+                    { "Password", [ "Invalid data" ] }
+                });
 
         var fingerprint = authGenerator.GenerateFingerprint(httpContext);
         var accessToken = authGenerator.GenerateAccessToken(request.UserName, fingerprint);

@@ -23,12 +23,18 @@ export const LoginPage = () => {
             body: { username, password }
         });
 
-        // Si el hook devolvió datos (login exitoso)
         if (result && result.accessToken) {
             afterLoginActions(result.accessToken);
             navigate('/home');
         }
-        // Manage response
+    };
+
+    const getFieldError = (fieldName: string): string | undefined => {
+        if (error && typeof error === 'object' && 'errors' in error) {
+            const messages = error.errors?.[fieldName];
+            return Array.isArray(messages) ? messages[0] : undefined;
+        }
+        return undefined;
     };
 
     return (
@@ -36,10 +42,17 @@ export const LoginPage = () => {
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
                 <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">Welcome</h2>
 
-                {/* Usamos el error que viene directamente del Hook */}
-                {error && (
+                {/* Mensaje de error general (si no es un error de validación de campos) */}
+                {error && typeof error === 'string' && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         {error}
+                    </div>
+                )}
+
+                {/* Mensaje de error general si es ProblemDetails pero sin errores específicos */}
+                {error && typeof error === 'object' && !error.errors && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        {error.title || "Request error"}
                     </div>
                 )}
 
@@ -52,6 +65,7 @@ export const LoginPage = () => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            errorMessage={getFieldError('UserName') || getFieldError('userName')}
                         />
 
                         <Input
@@ -61,6 +75,7 @@ export const LoginPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            errorMessage={getFieldError('Password') || getFieldError('password')}
                         />
                     </div>
 
