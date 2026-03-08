@@ -80,7 +80,16 @@ internal static class ServiceCollectionExtensions
                         //TODO! - warning????
                         Console.WriteLine("Auth fail! " + context.Exception.Message);
                         return Task.CompletedTask;
-                    }
+                    },
+                    //OnTokenValidated = ctx =>
+                    //{
+                    //    foreach (var claim in ctx.Principal!.Claims)
+                    //    {
+                    //        Console.WriteLine($"{claim.Type} = {claim.Value}");
+                    //    }
+
+                    //    return Task.CompletedTask;
+                    //}
                 };
 
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -119,12 +128,12 @@ internal static class ServiceCollectionExtensions
             .AddPolicy("RequireAdmin", policy =>
             {
                 policy.RequireAuthenticatedUser();
-                policy.RequireClaim("role", "admin");
+                policy.RequireRole(["admin"]);
             })
             .AddPolicy("RequireReader", policy =>
             {
                 policy.RequireAuthenticatedUser();
-                policy.RequireClaim("role", ["admin", "reader"]);
+                policy.RequireRole(["reader", "admin"]);
             });
 
         return services;
