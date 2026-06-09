@@ -66,6 +66,7 @@ public class AuthFacade : IAuthFacade
 
     public string GenerateFingerprint(HttpContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         var userAgent = context.Request.Headers.UserAgent.ToString();
         var ip = context.Connection.RemoteIpAddress?.ToString();
 
@@ -78,37 +79,72 @@ public class AuthFacade : IAuthFacade
 
     public void AddSecureCookie(HttpContext context, CookieKeyEnum keyEnum, string value)
     {
-        var key = keyEnum switch
-        {
-            CookieKeyEnum.Fingerprint => "fp",
-            CookieKeyEnum.RefreshToken => "refresh_token",
-            _ => nameof(keyEnum)
-        };
-        AddSecureCookie(context, key, value);
+        AddSecureCookie(context, GetSecureCookieName(keyEnum), value, GetSecureCookiePath(keyEnum));
     }
 
     public void AddSecureCookie(HttpContext context, string key, string value)
     {
+        AddSecureCookie(context, key, value, "/");
+    }
+
+    private static void AddSecureCookie(HttpContext context, string key, string value, string path)
+    {
+        ArgumentNullException.ThrowIfNull(context);
         context.Response.Cookies.Append(
             key,
             value,
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
+                // Secure follows the connection: true under HTTPS, false on plain-HTTP localhost.
+                Secure = context.Request.IsHttps,
                 SameSite = SameSiteMode.Lax,
-                Path = "/"
+                Path = path
             });
-        //TODO different configuration for localhost! -------------------------
-        //context.Response.Cookies.Append(
-        //    key,
-        //    value,
-        //    new CookieOptions
-        //    {
-        //        HttpOnly = true,
-        //        Secure = true,
-        //        SameSite = SameSiteMode.None
-        //    });
     }
 
+    public string? GetSecureCookie(HttpContext context, CookieKeyEnum keyEnum)
+    {
+        return GetSecureCookie(context, GetSecureCookieName(keyEnum));
+    }
+
+    public string? GetSecureCookie(HttpContext context, string key)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(key);
+        return context.Request.Cookies.TryGetValue(key, out var value) ? value : null;
+    }
+
+    public void RemoveSecureCookie(HttpContext context, string key)
+    {
+        RemoveSecureCookie(context, key, "/");
+    }
+
+    public void RemoveSecureCookie(HttpContext context, CookieKeyEnum keyEnum)
+    {
+        RemoveSecureCookie(context, GetSecureCookieName(keyEnum), GetSecureCookiePath(keyEnum));
+    }
+
+    private static void RemoveSecureCookie(HttpContext context, string key, string path)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(key);
+        // Path must match the one used on Append for the browser to drop the cookie.
+        context.Response.Cookies.Delete(key, new CookieOptions { Path = path });
+    }
+
+    private static string GetSecureCookieName(CookieKeyEnum keyEnum) => keyEnum switch
+    {
+        CookieKeyEnum.Fingerprint => "fp",
+        CookieKeyEnum.RefreshToken => "refresh_token",
+        _ => nameof(keyEnum)
+    };
+
+    // The refresh token is only ever sent to the refresh endpoint, shrinking its exposure surface.
+    // The fingerprint must travel on every request, so it stays at root.
+    private static string GetSecureCookiePath(CookieKeyEnum keyEnum) => keyEnum switch
+    {
+        CookieKeyEnum.RefreshToken => "/v1/refresh",
+        _ => "/"
+    };
 }

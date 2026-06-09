@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
+import { refreshAccessToken } from '../api/authClient';
 import type { ProblemDetails } from '../types/api';
 
 interface FetchOptions {
@@ -21,9 +22,12 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
     const { accessToken, afterLoginActions, afterLogoutActions } = useAuth();
 
     const executeFetch = useCallback(
-        async (manualOptions?: FetchOptions, isRetry = false): Promise<T | null> => {
+        async (manualOptions?: FetchOptions, isRetry = false, overrideToken?: string): Promise<T | null> => {
             setLoading(true);
             const currentOptions = { ...options, ...manualOptions };
+            // On a retry we pass the freshly refreshed token explicitly: the closure's `accessToken`
+            // is stale within this execution (setState hasn't re-rendered this callback yet).
+            const tokenToUse = overrideToken ?? accessToken;
 
             try
             {
@@ -39,7 +43,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
                     method: currentOptions.method || 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                        ...(tokenToUse ? { Authorization: `Bearer ${tokenToUse}` } : {}),
                     },
                     credentials: 'include',
                 };
@@ -52,18 +56,13 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
                 const hasRefreshToken = localStorage.getItem("refreshTokenPresent");
 
                 if (response.status === 401 && !isRetry && hasRefreshToken) {
-                    console.log("Access Token expired, trying to refresh...");                    
+                    console.log("Access Token expired, trying to refresh...");
 
-                    const refreshRespose = await fetch(`${API_URL}/v1/refresh`, {
-                        method: 'POST',
-                        credentials: 'include',
-                    });
+                    const newToken = await refreshAccessToken();
 
-                    if (refreshRespose.ok) {
-                        const refreshData = await refreshRespose.json();
-                        afterLoginActions(refreshData.accessToken);
-
-                        return await executeFetch(manualOptions, true);
+                    if (newToken) {
+                        afterLoginActions(newToken);
+                        return await executeFetch(manualOptions, true, newToken);
                     }
                     else {
                         afterLogoutActions();
@@ -103,7 +102,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
     );
 
     useEffect(() => {
-        // No ejecutamos automáticamente si no hay URL o si es una acción manual (como login)
+        // No ejecutamos automï¿½ticamente si no hay URL o si es una acciï¿½n manual (como login)
         // Pero para listas de datos, se ejecuta al montar:
         if (url !== '/v1/login') {
             executeFetch();

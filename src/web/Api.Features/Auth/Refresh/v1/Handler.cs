@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Models.Entity;
-using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 namespace Api.Features.Auth.Refresh.v1;
 
@@ -19,28 +18,35 @@ public class Handler : IEndpointModule
             .WithTags("Auth")
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(1, 0)
-            .AddFluentValidationAutoValidation()
             .ProducesValidationProblem()
-            .AddFluentValidationAutoValidation()
             .AllowAnonymous();
     }
 
-    private static async Task<IResult> Handle(HttpContext httpContext, Request request, IAuthFacade authGenerator, IRepository<RefreshToken> refreshTokenRepository, CancellationToken cancellationToken)
+    private static async Task<IResult> Handle(HttpContext httpContext, IAuthFacade authGenerator, IRepository<RefreshToken> refreshTokenRepository, CancellationToken cancellationToken)
     {
-        var tokenHash = authGenerator.GenerateHash(request.Token);
-        var refreshTokens = await refreshTokenRepository.FilterAsync(w => w.Hash.Equals(tokenHash, StringComparison.Ordinal), cancellationToken);
-        if (refreshTokens is null || !refreshTokens.Any())
+        var token = authGenerator.GetSecureCookie(httpContext, CookieKeyEnum.RefreshToken);
+        if (string.IsNullOrEmpty(token))
             return Results.BadRequest();
 
-        if (refreshTokens.First().IsExpired)
+        var tokenHash = authGenerator.GenerateHash(token);
+        var refreshTokens = await refreshTokenRepository.FilterAsync(w => w.Hash.Equals(tokenHash, StringComparison.Ordinal), cancellationToken);
+        var existingToken = refreshTokens?.FirstOrDefault();
+        if (existingToken is null)
+            return Results.Unauthorized();
+
+        if (!existingToken.IsActive)
         {
-            await HandleReuseAttack(refreshTokenRepository, refreshTokens.First(), cancellationToken);
-            return Results.BadRequest();
+            // A revoked token presented again means the rotated chain was replayed — treat it as
+            // theft and revoke the whole family. A naturally expired token is just a re-login.
+            if (existingToken.IsRevoked)
+                await HandleReuseAttack(refreshTokenRepository, existingToken, cancellationToken);
+
+            return Results.Unauthorized();
         }
 
-        var newRefreshToken = authGenerator.GenerateRefreshToken(refreshTokens.First().UserName);
+        var newRefreshToken = authGenerator.GenerateRefreshToken(existingToken.UserName);
         var newRefreshTokenHash = authGenerator.GenerateHash(newRefreshToken);
-        var oldRefreshTokenEntity = refreshTokens.First() with
+        var oldRefreshTokenEntity = existingToken with
         {
             RevokedAt = DateTime.UtcNow,
             ReplacedByHash = newRefreshTokenHash,
@@ -67,15 +73,13 @@ public class Handler : IEndpointModule
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.Fingerprint, newRefreshTokenEntity.Fingerprint);
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.RefreshToken, newRefreshToken);
 
-        return Results.Ok(new Response() { AccessToken = newAccessToken, RefreshToken = newRefreshToken });
+        return Results.Ok(new Response() { AccessToken = newAccessToken });
     }
 
 
     private static async Task HandleReuseAttack(IRepository<RefreshToken> refreshTokenRepository, RefreshToken refreshTokenEntity, CancellationToken cancellationToken)
     {
-        if (refreshTokenEntity.ReplacedByHash == null)
-            return;
-
+        // Revoke every still-active token of the user: the chain is considered compromised.
         var activeRefreshTokens = await refreshTokenRepository
             .FilterAsync(
                 x => x.UserName == refreshTokenEntity.UserName && x.RevokedAt == null,

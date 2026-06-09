@@ -1,5 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { AuthContext } from './AuthContext';
+import { useFetch } from "../hooks/useFetch";
+import { refreshAccessToken } from "../api/authClient";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -16,20 +18,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const afterLogoutActions = async () => {
-        //TODO useFetch 
+        //TODO useFetch?
 
-        try {
-            await fetch(`${API_URL}/v1/logout`, {
-                method: "POST",
-                credentials: "include"
-            });
-        } catch (err) {
-            console.error(err);
-        }
+        const { data } = useFetch<string>(
+            `${API_URL}/v1/logout`,
+            { method: 'POST' }
+        );
+        console.info(data);
+        //try {
+        //    await fetch(`${API_URL}/v1/logout`, {
+        //        method: "POST",
+        //        credentials: "include",
+        //        headers: {
+        //            'Content-Type': 'application/json',
+        //            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        //        }
+        //    });
+        //} catch (err) {
+        //    console.error(err);
+        //}
 
         setAccessToken(null);
         setIsAuthenticated(false);
-
+        
         localStorage.removeItem("refreshTokenPresent");
     };
 
@@ -43,15 +54,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
 
             try {
-                const response = await fetch(`${API_URL}/v1/refresh`, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" }
-                });
+                const newToken = await refreshAccessToken();
 
-                if (response.ok) {
-                    const data = await response.json();
-                    afterLoginActions(data.accessToken);
+                if (newToken) {
+                    afterLoginActions(newToken);
                 } else {
                     localStorage.removeItem("refreshTokenPresent");
                     setIsAuthenticated(false);

@@ -51,13 +51,12 @@ app.UseExceptionHandler();
 app.UseCors("DefaultPolicy");
 //app.ConfigureContentSecurityPolicy(); //TODO check!! ---------------------
 
-app.UseMiddleware<FingerprintValidationMiddleware>();
-
 app.ConfigureOpenApi();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<FingerprintValidationMiddleware>();
 app.MapDefaultHealthChecks();
 app.MapEndpointsAndConfigureApiVersions();
 

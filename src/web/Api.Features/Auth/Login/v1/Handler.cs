@@ -21,7 +21,6 @@ public class Handler : IEndpointModule
             .MapToApiVersion(1, 0)
             .AddFluentValidationAutoValidation()
             .ProducesValidationProblem()
-            .AddFluentValidationAutoValidation()
             .AllowAnonymous();
     }
 
@@ -50,7 +49,7 @@ public class Handler : IEndpointModule
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.Fingerprint, fingerprint);
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.RefreshToken, refreshToken);
 
-        return Results.Ok(new Response { AccessToken = accessToken, RefreshToken = refreshToken });
+        return Results.Ok(new Response { AccessToken = accessToken });
     }
 
 }
