@@ -4,10 +4,10 @@ namespace Api.Features.Services.Auth;
 
 public interface IAuthFacade
 {
-    string GenerateAccessToken(string userId, string fingerprint);
+    string GenerateAccessToken(string userId, string fingerprintHash);
     string GenerateRefreshToken(string userId);
     string GenerateHash(string token);
-    string GenerateFingerprint(HttpContext context);
+    string GenerateFingerprint();
     void AddSecureCookie(HttpContext context, string key, string value);
     void AddSecureCookie(HttpContext context, CookieKeyEnum keyEnum, string value);
     string? GetSecureCookie(HttpContext context, string key);

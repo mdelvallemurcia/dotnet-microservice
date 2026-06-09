@@ -39,13 +39,15 @@ public class Handler : IEndpointModule
                     { "Password", [ "Invalid data" ] }
                 });
 
-        var fingerprint = authGenerator.GenerateFingerprint(httpContext);
-        var accessToken = authGenerator.GenerateAccessToken(request.UserName, fingerprint);
+        var fingerprint = authGenerator.GenerateFingerprint();
+        var fingerprintHash = authGenerator.GenerateHash(fingerprint);
+        var accessToken = authGenerator.GenerateAccessToken(request.UserName, fingerprintHash);
         var refreshToken = authGenerator.GenerateRefreshToken(request.UserName);
 
-        var refreshTokenEntity = request.ToRefreshToken(refreshToken, httpContext, authGenerator);
+        var refreshTokenEntity = request.ToRefreshToken(refreshToken, fingerprintHash, httpContext, authGenerator);
         await refreshTokenRepository.InsertAsync(refreshTokenEntity);
 
+        // Raw fingerprint in the cookie; only its hash lives in the token and the DB.
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.Fingerprint, fingerprint);
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.RefreshToken, refreshToken);
 

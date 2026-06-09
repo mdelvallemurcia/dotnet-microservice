@@ -67,7 +67,7 @@ internal static class ServiceCollectionExtensions
                         return JwtBearerDefaults.AuthenticationScheme;
 
                     if (authHeader.StartsWith("ldx ", StringComparison.OrdinalIgnoreCase))
-                        return "HMAC";
+                        return HmacAuthenticationHandler.SchemeName;
 
                     return JwtBearerDefaults.AuthenticationScheme;
                 };
@@ -111,7 +111,7 @@ internal static class ServiceCollectionExtensions
                 };
             })
             .AddScheme<AuthenticationSchemeOptions, HmacAuthenticationHandler>(
-                "HMAC", options => { }
+                HmacAuthenticationHandler.SchemeName, options => { }
             );
 
         return services;

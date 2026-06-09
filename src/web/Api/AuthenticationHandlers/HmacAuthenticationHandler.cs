@@ -7,6 +7,10 @@ namespace api.AuthenticationHandlers;
 
 internal class HmacAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
+    // Single source of truth for the scheme name: used to register the scheme, to route by
+    // Authorization prefix, and to exempt HMAC callers from fingerprint validation.
+    public const string SchemeName = "HMAC";
+
     private readonly TimeProvider _timeProvider;
 
     public HmacAuthenticationHandler(

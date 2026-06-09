@@ -18,7 +18,7 @@ public class AuthFacade : IAuthFacade
         _optionsMonitor = optionsMonitor;
     }
 
-    public string GenerateAccessToken(string userId, string fingerprint)
+    public string GenerateAccessToken(string userId, string fingerprintHash)
     {
         var options = _optionsMonitor.CurrentValue;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.SecretKey));
@@ -30,7 +30,7 @@ public class AuthFacade : IAuthFacade
             new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
             new(ClaimTypes.Role, "reader"),
             new(ClaimTypes.Role, "writer"),
-            new("fp", fingerprint),
+            new("fp", fingerprintHash),
             new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
 
@@ -64,17 +64,15 @@ public class AuthFacade : IAuthFacade
         return Convert.ToBase64String(bytes);
     }
 
-    public string GenerateFingerprint(HttpContext context)
+    public string GenerateFingerprint()
     {
-        ArgumentNullException.ThrowIfNull(context);
-        var userAgent = context.Request.Headers.UserAgent.ToString();
-        var ip = context.Connection.RemoteIpAddress?.ToString();
-
-        var raw = $"{userAgent}:{ip}";
-
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
-
-        return Convert.ToBase64String(hash);
+        // OWASP token-sidejacking mitigation: a high-entropy random value. The raw value goes into a
+        // hardened cookie and its hash travels in the JWT 'fp' claim, so a stolen token is useless
+        // without the paired cookie. NOT derived from UA/IP (that was weak and changed across networks).
+        var randomBytes = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 
     public void AddSecureCookie(HttpContext context, CookieKeyEnum keyEnum, string value)

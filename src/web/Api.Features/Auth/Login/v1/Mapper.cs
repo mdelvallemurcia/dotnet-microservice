@@ -6,12 +6,12 @@ namespace Api.Features.Auth.Login.v1;
 
 internal static class Mapper
 {
-    internal static RefreshToken ToRefreshToken(this Request request, string refreshToken, HttpContext httpContext, IAuthFacade authGenerator)
+    internal static RefreshToken ToRefreshToken(this Request request, string refreshToken, string fingerprintHash, HttpContext httpContext, IAuthFacade authGenerator)
     {
         //config
         return new(
             request.UserName,
-            authGenerator.GenerateFingerprint(httpContext),
+            fingerprintHash,
             DateTime.UtcNow,
             DateTime.UtcNow.AddHours(1),
             null,

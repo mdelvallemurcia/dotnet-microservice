@@ -54,10 +54,14 @@ public class Handler : IEndpointModule
         };
         await refreshTokenRepository.UpdateAsync(oldRefreshTokenEntity, cancellationToken);
 
+        // Rotate the fingerprint together with the refresh token: fresh random value each cycle.
+        var newFingerprint = authGenerator.GenerateFingerprint();
+        var newFingerprintHash = authGenerator.GenerateHash(newFingerprint);
+
         // TODO config expiration -------------------------------------------------------------------------------- maxSessions ?
         var newRefreshTokenEntity = new RefreshToken(
             oldRefreshTokenEntity.UserName,
-            authGenerator.GenerateFingerprint(httpContext),
+            newFingerprintHash,
             DateTime.UtcNow,
             DateTime.UtcNow.AddDays(1),
             null,
@@ -69,8 +73,8 @@ public class Handler : IEndpointModule
         );
         await refreshTokenRepository.InsertAsync(newRefreshTokenEntity, CancellationToken.None);
 
-        var newAccessToken = authGenerator.GenerateAccessToken(oldRefreshTokenEntity.UserName, newRefreshTokenEntity.Fingerprint);
-        authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.Fingerprint, newRefreshTokenEntity.Fingerprint);
+        var newAccessToken = authGenerator.GenerateAccessToken(oldRefreshTokenEntity.UserName, newFingerprintHash);
+        authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.Fingerprint, newFingerprint);
         authGenerator.AddSecureCookie(httpContext, CookieKeyEnum.RefreshToken, newRefreshToken);
 
         return Results.Ok(new Response() { AccessToken = newAccessToken });
