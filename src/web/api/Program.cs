@@ -27,7 +27,8 @@ builder.Services
     .AddValidatorsFromAssemblyContaining<Api.Features.IEndpointModule>()
     .AddMongoRepository(builder.Configuration.GetSection(MongoDbOptions.Section).Get<MongoDbOptions>()!)
     .ConfigureMassTransit(builder.Configuration.GetSection(RabbitMqOptions.Section).Get<RabbitMqOptions>()!)
-    .ConfigureCors()
+    .ConfigureCors(builder.Configuration.GetSection(CorsOptions.Section).Get<CorsOptions>()?.AllowedOrigins ?? [])
+    .ConfigureForwardedHeaders()
     .ConfigureOpenTelemetry()
     .ConfigureHealthChecks();
 
@@ -47,13 +48,20 @@ builder.Logging
 
 var app = builder.Build();
 
+// Must run before any middleware that reads the scheme/remote IP (HTTPS redirect, auth, cookies).
+app.UseForwardedHeaders();
+
 app.UseExceptionHandler();
 app.UseCors("DefaultPolicy");
 //app.ConfigureContentSecurityPolicy(); //TODO check!! ---------------------
 
 app.ConfigureOpenApi();
 
-app.UseHttpsRedirection();
+// In Development the SPA reaches the API through Vite's HTTP proxy; redirecting to HTTPS would
+// break that hop (and force Secure cookies an http page can't store). Keep it for prod only.
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<FingerprintValidationMiddleware>();

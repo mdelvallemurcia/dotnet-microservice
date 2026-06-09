@@ -9,6 +9,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
@@ -154,7 +155,7 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection ConfigureCors(this IServiceCollection services)
+    public static IServiceCollection ConfigureCors(this IServiceCollection services, string[] allowedOrigins)
     {
         services
             .AddCors(options =>
@@ -164,14 +165,34 @@ internal static class ServiceCollectionExtensions
                     builder =>
                     {
                         builder
-                            .WithOrigins("http://localhost:5173") //TODO configure!
-                                                                  //.AllowAnyOrigin()
+                            // Origins come from config (Cors:AllowedOrigins): dev uses localhost,
+                            // prod uses the UI subdomain (e.g. https://app.midominio.com).
+                            // AllowCredentials is required for the auth cookies to flow.
+                            .WithOrigins(allowedOrigins)
                             .AllowAnyMethod()
                             .AllowAnyHeader()
                             .AllowCredentials();
                     }
                 );
             });
+        return services;
+    }
+
+    public static IServiceCollection ConfigureForwardedHeaders(this IServiceCollection services)
+    {
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            // Behind a TLS-terminating ingress (the subdomain prod setup), the app sees plain HTTP.
+            // Honoring X-Forwarded-Proto lets Request.IsHttps reflect the real scheme, so the Secure
+            // cookie flag and HTTPS redirection behave correctly.
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+            // Proxy/load-balancer IPs are not known at build time (containers/dynamic infra).
+            // In a hardened deployment, restrict these to the known ingress addresses instead.
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
         return services;
     }
 
