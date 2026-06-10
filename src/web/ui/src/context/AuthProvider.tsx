@@ -1,9 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { AuthContext } from './AuthContext';
-import { useFetch } from "../hooks/useFetch";
-import { refreshAccessToken } from "../api/authClient";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { logout, refreshAccessToken } from "../api/authClient";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -18,29 +15,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const afterLogoutActions = async () => {
-        //TODO useFetch?
-
-        const { data } = useFetch<string>(
-            `${API_URL}/v1/logout`,
-            { method: 'POST' }
-        );
-        console.info(data);
-        //try {
-        //    await fetch(`${API_URL}/v1/logout`, {
-        //        method: "POST",
-        //        credentials: "include",
-        //        headers: {
-        //            'Content-Type': 'application/json',
-        //            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        //        }
-        //    });
-        //} catch (err) {
-        //    console.error(err);
-        //}
+        await logout(accessToken);
 
         setAccessToken(null);
         setIsAuthenticated(false);
-        
+
         localStorage.removeItem("refreshTokenPresent");
     };
 
@@ -80,23 +59,3 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         </AuthContext.Provider>
     );
 };
-
-//const refreshAccessToken = async (): Promise<string | null> =>
-//{
-//    const hasRefreshToken = localStorage.getItem("refreshTokenPresent");
-//    if (!hasRefreshToken) return null;
-//    try {
-//        const response = await fetch(`${API_URL}/v1/refresh`, {
-//            method: "POST",
-//            credentials: "include"
-//        });
-//        if (!response.ok) return null;
-//        const data = await response.json();
-//        setAccessToken(data.accessToken);
-//        setIsAuthenticated(true);
-//        return data.accessToken;
-//    }
-//    catch {
-//        return null;
-//    }
-//};

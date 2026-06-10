@@ -19,3 +19,17 @@ export function refreshAccessToken(): Promise<string | null> {
 
     return refreshPromise;
 }
+
+// Best-effort logout: tells the server to clear the refresh_token / fp cookies.
+// Plain fetch (no hooks) so it can be called from event handlers and effects alike.
+export async function logout(accessToken: string | null): Promise<void> {
+    try {
+        await fetch(`${API_URL}/v1/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+        });
+    } catch {
+        // Network failure shouldn't block clearing client-side auth state.
+    }
+}

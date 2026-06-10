@@ -11,10 +11,6 @@ interface FetchOptions {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-//const controller = new AbortController();
-//setTimeout(() => controller.abort(), 5000);
-//fetch(url, { signal: controller.signal });
-
 export function useFetch<T>(url: string, options: FetchOptions = {}) {
     const [data, setData] = useState<T | null>(null);
     const [loading, setLoading] = useState(false);
@@ -56,8 +52,6 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
                 const hasRefreshToken = localStorage.getItem("refreshTokenPresent");
 
                 if (response.status === 401 && !isRetry && hasRefreshToken) {
-                    console.log("Access Token expired, trying to refresh...");
-
                     const newToken = await refreshAccessToken();
 
                     if (newToken) {
@@ -102,8 +96,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
     );
 
     useEffect(() => {
-        // No ejecutamos autom�ticamente si no hay URL o si es una acci�n manual (como login)
-        // Pero para listas de datos, se ejecuta al montar:
+        // Skip auto-fetch for manual actions like login; data lists fetch on mount.
         if (url !== '/v1/login') {
             executeFetch();
         }
