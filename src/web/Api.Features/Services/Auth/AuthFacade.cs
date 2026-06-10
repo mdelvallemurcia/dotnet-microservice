@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,7 +32,7 @@ public class AuthFacade : IAuthFacade
             new(ClaimTypes.Role, "reader"),
             new(ClaimTypes.Role, "writer"),
             new("fp", fingerprintHash),
-            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -50,12 +51,19 @@ public class AuthFacade : IAuthFacade
         return tokenHandler.WriteToken(token);
     }
 
-    public string GenerateRefreshToken(string userId)
+    public string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
         return Convert.ToBase64String(randomNumber);
+    }
+
+    // Single source of truth for refresh-token lifetime, config-driven (BearerToken:RefreshTokenExpirationInDays).
+    // Both login and refresh use this so the expiry can never drift between the two paths again.
+    public DateTime GetRefreshTokenExpiresAt()
+    {
+        return DateTime.UtcNow.AddDays(_optionsMonitor.CurrentValue.RefreshTokenExpirationInDays);
     }
 
     public string GenerateHash(string token)

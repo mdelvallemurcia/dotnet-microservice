@@ -8,12 +8,11 @@ internal static class Mapper
 {
     internal static RefreshToken ToRefreshToken(this Request request, string refreshToken, string fingerprintHash, HttpContext httpContext, IAuthFacade authGenerator)
     {
-        //config
         return new(
             request.UserName,
             fingerprintHash,
             DateTime.UtcNow,
-            DateTime.UtcNow.AddHours(1),
+            authGenerator.GetRefreshTokenExpiresAt(),
             null,
             authGenerator.GenerateHash(refreshToken),
             string.Empty,

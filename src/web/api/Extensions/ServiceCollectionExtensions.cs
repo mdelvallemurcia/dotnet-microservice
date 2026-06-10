@@ -46,6 +46,8 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<Features.Services.Auth.IAuthFacade, Features.Services.Auth.AuthFacade>();
         services.AddSingleton(TimeProvider.System); // HMAC, necessary?
 
+        services.AddHostedService<HostedServices.RefreshTokenIndexInitializer>();
+
         return services;
     }
 
@@ -78,8 +80,10 @@ internal static class ServiceCollectionExtensions
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        //TODO! - warning????
-                        Console.WriteLine("Auth fail! " + context.Exception.Message);
+                        var logger = context.HttpContext.RequestServices
+                            .GetRequiredService<ILoggerFactory>()
+                            .CreateLogger("Api.Authentication.JwtBearer");
+                        logger.LogWarning(context.Exception, "JWT authentication failed");
                         return Task.CompletedTask;
                     },
                     //OnTokenValidated = ctx =>
@@ -146,10 +150,11 @@ internal static class ServiceCollectionExtensions
             .AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
             {
 
-                pc.ProblemDetails.Extensions.Add("id", Activity.Current.Id);
-                pc.ProblemDetails.Extensions.Add("spanId", Activity.Current.SpanId.ToString());
+                var activity = Activity.Current;
+                pc.ProblemDetails.Extensions.Add("id", activity?.Id);
+                pc.ProblemDetails.Extensions.Add("spanId", activity?.SpanId.ToString());
                 if (!pc.ProblemDetails.Extensions.ContainsKey("traceId"))
-                    pc.ProblemDetails.Extensions.Add("traceId", Activity.Current.TraceId.ToString());
+                    pc.ProblemDetails.Extensions.Add("traceId", activity?.TraceId.ToString());
             });
 
         return services;
@@ -189,7 +194,7 @@ internal static class ServiceCollectionExtensions
 
             // Proxy/load-balancer IPs are not known at build time (containers/dynamic infra).
             // In a hardened deployment, restrict these to the known ingress addresses instead.
-            options.KnownNetworks.Clear();
+            options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
         });
 
@@ -241,8 +246,8 @@ internal static class ServiceCollectionExtensions
                     .SetSampler(new AlwaysOnSampler())
                     .AddAspNetCoreInstrumentation(tracing =>
                         tracing.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(healthEndpointPath)
-                            && !context.Request.Path.StartsWithSegments(alivenessEndpointPath)
+                            !context.Request.Path.StartsWithSegments(healthEndpointPath, StringComparison.OrdinalIgnoreCase)
+                            && !context.Request.Path.StartsWithSegments(alivenessEndpointPath, StringComparison.OrdinalIgnoreCase)
                     )
                     .AddHttpClientInstrumentation()
                     //.AddMongoDBInstrumentation()

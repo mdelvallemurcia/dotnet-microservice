@@ -91,8 +91,8 @@ internal static class ServiceCollectionExtensions
                     .SetSampler(new AlwaysOnSampler())
                     .AddAspNetCoreInstrumentation(tracing =>
                         tracing.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(healthEndpointPath)
-                            && !context.Request.Path.StartsWithSegments(alivenessEndpointPath)
+                            !context.Request.Path.StartsWithSegments(healthEndpointPath, StringComparison.OrdinalIgnoreCase)
+                            && !context.Request.Path.StartsWithSegments(alivenessEndpointPath, StringComparison.OrdinalIgnoreCase)
                     )                    
                     .AddHttpClientInstrumentation()
                     .AddSource(nameof(MassTransit))

@@ -1,41 +1,37 @@
 ﻿using MassTransit;
-using System.Text;
 
 namespace ProjectSubscriber.MassTransit;
 
 public class ConsumeObserver : IConsumeObserver
 {
-    public ILogger<ConsumeObserver> _logger { get; }
+    private readonly ILogger<ConsumeObserver> _logger;
 
     public ConsumeObserver(ILogger<ConsumeObserver> logger)
     {
         _logger = logger;
     }
 
-    // Se ejecuta justo cuando el mensaje llega de RabbitMQ, antes de buscar al Consumer
+    // Runs as soon as the message arrives from RabbitMQ, before the consumer is resolved.
     public Task PreConsume<T>(ConsumeContext<T> context) where T : class
     {
-        var sb = new StringBuilder();
-        sb.AppendLine($"📩 Mensaje recibido: {typeof(T).Name}");
-        sb.AppendLine($"🆔 ID: {context.MessageId}");
-        sb.AppendLine($"📍 RoutingKey: {context.RoutingKey()}");
-
-        _logger.LogDebug(sb.ToString());
+        _logger.LogDebug(
+            "Message received: {MessageType} (Id: {MessageId}, RoutingKey: {RoutingKey})",
+            typeof(T).Name, context.MessageId, context.RoutingKey());
 
         return Task.CompletedTask;
     }
 
-    // Se ejecuta después de que el Consumer ha terminado con éxito
+    // Runs after the consumer finishes successfully.
     public Task PostConsume<T>(ConsumeContext<T> context) where T : class
     {
-        _logger.LogDebug($"✅ Mensaje procesado con éxito: {typeof(T).Name}");
+        _logger.LogDebug("Message processed successfully: {MessageType}", typeof(T).Name);
         return Task.CompletedTask;
     }
 
-    // Se ejecuta si el Consumer lanza una excepción
+    // Runs if the consumer throws.
     public Task ConsumeFault<T>(ConsumeContext<T> context, Exception exception) where T : class
     {
-        _logger.LogError($"❌ Error procesando {typeof(T).Name}: {exception.Message}");
+        _logger.LogError(exception, "Error processing {MessageType}", typeof(T).Name);
         return Task.CompletedTask;
     }
 }

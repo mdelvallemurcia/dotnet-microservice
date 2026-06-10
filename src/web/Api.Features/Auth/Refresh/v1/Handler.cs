@@ -44,7 +44,7 @@ public class Handler : IEndpointModule
             return Results.Unauthorized();
         }
 
-        var newRefreshToken = authGenerator.GenerateRefreshToken(existingToken.UserName);
+        var newRefreshToken = authGenerator.GenerateRefreshToken();
         var newRefreshTokenHash = authGenerator.GenerateHash(newRefreshToken);
         var oldRefreshTokenEntity = existingToken with
         {
@@ -58,12 +58,11 @@ public class Handler : IEndpointModule
         var newFingerprint = authGenerator.GenerateFingerprint();
         var newFingerprintHash = authGenerator.GenerateHash(newFingerprint);
 
-        // TODO config expiration -------------------------------------------------------------------------------- maxSessions ?
         var newRefreshTokenEntity = new RefreshToken(
             oldRefreshTokenEntity.UserName,
             newFingerprintHash,
             DateTime.UtcNow,
-            DateTime.UtcNow.AddDays(1),
+            authGenerator.GetRefreshTokenExpiresAt(),
             null,
             authGenerator.GenerateHash(newRefreshToken),
             string.Empty,

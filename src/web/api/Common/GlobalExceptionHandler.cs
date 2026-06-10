@@ -30,9 +30,10 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             problemDetails.Detail = exception.Message;
             problemDetails.Instance = $"{httpContext.Request.Method} {httpContext.Request.Path}";
-            problemDetails.Extensions.Add("id", Activity.Current.Id);
-            problemDetails.Extensions.Add("spanId", Activity.Current.SpanId.ToString());
-            problemDetails.Extensions.Add("traceId", Activity.Current.TraceId.ToString());
+            var activity = Activity.Current;
+            problemDetails.Extensions.Add("id", activity?.Id);
+            problemDetails.Extensions.Add("spanId", activity?.SpanId.ToString());
+            problemDetails.Extensions.Add("traceId", activity?.TraceId.ToString());
         }
 
         httpContext.Response.StatusCode = problemDetails.Status.Value;

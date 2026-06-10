@@ -36,8 +36,57 @@ dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 dotnet_naming_style.prefix_underscore.capitalization = camel_case
 dotnet_naming_style.prefix_underscore.required_prefix = _
 
+# --- CURATED ANALYZER RULESET ---
+# AnalysisMode=All (Directory.Build.props) turns the full CA catalog on. With TreatWarningsAsErrors,
+# every CA finding fails the build, so the ones below are deliberately silenced: they are
+# library-author / style opinions that don't fit an application of this shape. Rules with real
+# correctness signal (CS86xx nullability, CA2016/CA2000, CA13xx culture, ASPDEPR*) are kept ON and fixed.
+
+# CA1062: validate public-method params for null. This is a library rule; here params are DI- or
+#         framework-supplied (HttpContext, IBus, app) and never null. Pure noise for an app.
+dotnet_diagnostic.CA1062.severity = none
+# CA1515: make application types internal. Options/extension/entry types are intentionally public
+#         (cross-assembly use + config binding). Not a trimmed library; low value, high churn.
+dotnet_diagnostic.CA1515.severity = none
+# CA1812: uninstantiated internal class. False positives for DI/reflection-built types
+#         (endpoint handlers, consumers, validators, hosted services).
+dotnet_diagnostic.CA1812.severity = none
+# CA1852: seal internal types. Marginal; conflicts with source-generated/partial host types.
+dotnet_diagnostic.CA1852.severity = none
+# CA1819: properties should not return arrays. CorsOptions.AllowedOrigins is config-bound and needs
+#         a settable array; an immutable collection breaks the binder.
+dotnet_diagnostic.CA1819.severity = none
+# CA1308: normalize to uppercase. Mongo collection names are lowercase BY CONVENTION
+#         (MongoDbRepository uses ToLowerInvariant); "fixing" this would break persistence.
+dotnet_diagnostic.CA1308.severity = none
+# CA1724: type name conflicts with a namespace (Project / Extensions). Renaming domain types or the
+#         framework Extensions type is invasive for no real benefit.
+dotnet_diagnostic.CA1724.severity = none
+# CA1716: namespace matches a reserved keyword (Shared). Renaming the namespace ripples everywhere.
+dotnet_diagnostic.CA1716.severity = none
+# CA1711: type ends in 'Enum' (CookieKeyEnum). The suffix is descriptive and intentional here.
+dotnet_diagnostic.CA1711.severity = none
+# CA1848 / CA1873: use LoggerMessage delegates / guard expensive log args. High-throughput perf
+#         micro-optimization; the ceremony isn't warranted for this service's logging volume.
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+# CA1031: catch a more specific exception. The broad catch in ProjectAdd is an intentional resilience
+#         boundary around event publishing (records an EventFailure for retry). Keeping it by design.
+dotnet_diagnostic.CA1031.severity = none
+# CA1707: identifiers should not contain underscores. Conflicts with this repo's own conventions:
+#         the underscore-prefixed private field rule above AND xUnit test names (Method_Should_Result).
+dotnet_diagnostic.CA1707.severity = none
+
 # --- ESTILO DE CÓDIGO ---
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 insert_final_newline = true
+
+# --- TEST PROJECTS ---
+# Test code is idiomatic in ways production analyzers dislike; relax the noise here only.
+[test/**/*.cs]
+# CA2234: pass System.Uri instead of string. Relative string paths are clearer in test requests.
+dotnet_diagnostic.CA2234.severity = none
+# CA2000: dispose objects before losing scope. Test fixtures intentionally keep scopes/clients alive.
+dotnet_diagnostic.CA2000.severity = none

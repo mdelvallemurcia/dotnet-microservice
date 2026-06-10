@@ -9,7 +9,8 @@
 	<AnalysisModeDevelopment>All</AnalysisModeDevelopment>
 	<IlluminateImplicitAppearance>true</IlluminateImplicitAppearance>
 
-	<MSBuildTreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</MSBuildTreatWarningsAsErrors>
+	<!-- Compiler + analyzer warnings fail the build (curated ruleset lives in .editorconfig). -->
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 	
   <ItemGroup>

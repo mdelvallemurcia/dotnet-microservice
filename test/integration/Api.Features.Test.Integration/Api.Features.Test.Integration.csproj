@@ -23,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\web\Api.Features\api.features.csproj" />
+    <ProjectReference Include="..\..\..\src\web\Api\api.csproj" />
     <ProjectReference Include="..\src\web\Api.Features\Api.Features.csproj" />
     <ProjectReference Include="..\src\web\Api\api.csproj" />
   </ItemGroup>

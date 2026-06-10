@@ -20,11 +20,11 @@ Feature-level ideas live in the [readme Roadmap](./readme.md#roadmap--todo); thi
 
 ## P2 — Backend cleanup
 
-- [ ] Drive analyzer warnings to **0** (≈21 today: CA1848 logging, CA1305/1309 culture, CA2016 cancellation token, etc.) or enable `TreatWarningsAsErrors` and fix.
-- [ ] `GenerateRefreshToken(string userId)` ignores its `userId` argument — drop the param or use it.
-- [ ] Unify refresh-token expiration (login sets `AddHours(1)`, refresh sets `AddDays(1)`) and make it **config-driven**.
-- [ ] Replace `Console.WriteLine` in the JwtBearer `OnAuthenticationFailed` event with proper `ILogger`.
-- [ ] Add **MongoDB indexes** for `RefreshToken` (Hash unique, UserName, ExpiresAt as TTL) — snippet already drafted in the readme Roadmap.
+- [x] Drive analyzer warnings to **0** — curated `.editorconfig` ruleset (fix real signal: CS86xx nullability, CA2016/CA2000, CA13xx culture, CA2254 structured logging, ASPDEPR005; suppress library-author noise with justification: CA1062/1515/1812/1819/1308/1724/1716/1711/1707/1848/1031) + proper `TreatWarningsAsErrors` in `Directory.Build.props`. api/worker/tests/apphost all build clean.
+- [x] `GenerateRefreshToken(string userId)` ignores its `userId` argument — dropped the param (interface + impl + 2 call sites).
+- [x] Unify refresh-token expiration (login set `AddHours(1)`, refresh set `AddDays(1)`) and make it **config-driven** — single `IAuthFacade.GetRefreshTokenExpiresAt()` reads `BearerToken:RefreshTokenExpirationInDays` (default 7).
+- [x] Replace `Console.WriteLine` in the JwtBearer `OnAuthenticationFailed` event with proper `ILogger`.
+- [x] Add **MongoDB indexes** for `RefreshToken` (Hash unique, UserName, ExpiresAt as TTL) — `RefreshTokenIndexInitializer` hosted service.
 
 ## P2 — Tests
 

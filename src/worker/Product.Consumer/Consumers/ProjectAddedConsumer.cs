@@ -13,8 +13,8 @@ internal class ProjectAddedConsumer : IConsumer<ProjectAdded>
 
     public Task Consume(ConsumeContext<ProjectAdded> context)
     {
-        var mensaje = context.Message;
-        _logger.LogInformation($"Project created event: {mensaje.EventId}");
+        var message = context.Message;
+        _logger.LogInformation("Project created event: {EventId}", message.EventId);
 
         return Task.CompletedTask;
     }

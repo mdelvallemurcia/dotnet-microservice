@@ -42,13 +42,14 @@ public class Handler : IEndpointModule
         var @event = request.ToEventInsert();
         try
         {
-            var ct = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            await publishEndpoint.Publish(@event, ct.Token);
+            using var publishCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await publishEndpoint.Publish(@event, publishCts.Token);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to publish ProjectAdded event for project {ProjectId}", request.Id);
-            await eventFailureRepository.InsertAsync(new(@event));
+            // Persist the failure for later retry even if the request itself is being cancelled.
+            await eventFailureRepository.InsertAsync(new(@event), CancellationToken.None);
             return Results.InternalServerError(); //TODO adaptar a la excepción
         }
 

@@ -31,7 +31,7 @@ public class Handler : IEndpointModule
         IRepository<RefreshToken> refreshTokenRepository
     )
     {
-        if (!request.UserName.Equals("miguelito") || !request.Password.Equals("sdlkfj298LJ!"))
+        if (!request.UserName.Equals("miguelito", StringComparison.Ordinal) || !request.Password.Equals("sdlkfj298LJ!", StringComparison.Ordinal))
             return Results.ValidationProblem(
                 new Dictionary<string, string[]>
                 {
@@ -42,7 +42,7 @@ public class Handler : IEndpointModule
         var fingerprint = authGenerator.GenerateFingerprint();
         var fingerprintHash = authGenerator.GenerateHash(fingerprint);
         var accessToken = authGenerator.GenerateAccessToken(request.UserName, fingerprintHash);
-        var refreshToken = authGenerator.GenerateRefreshToken(request.UserName);
+        var refreshToken = authGenerator.GenerateRefreshToken();
 
         var refreshTokenEntity = request.ToRefreshToken(refreshToken, fingerprintHash, httpContext, authGenerator);
         await refreshTokenRepository.InsertAsync(refreshTokenEntity);
