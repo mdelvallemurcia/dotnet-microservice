@@ -70,3 +70,4 @@ Frontend side (`src/web/ui/src`): `context/AuthProvider` holds the access token 
 
 - Code, identifiers, and comments are English (some legacy comments are Spanish). Endpoint slices mirror the `<Area>/<Feature>/v1` folder shape; project file names are lowercase (`api.csproj`) while assemblies/namespaces are PascalCase.
 - Commit style: Conventional Commits, no AI attribution.
+- **Never add a library/dependency without consulting first.** No new NuGet/npm package (or swapping one for another) gets introduced without explicit user approval — propose it with the rationale and wait for a yes.

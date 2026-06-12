@@ -2,6 +2,7 @@
   <Folder Name="/deploy/" />
   <Folder Name="/Elementos de la solución/">
     <File Path=".gitignore" />
+    <File Path="CLAUDE.md" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -10,8 +11,8 @@
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/Common/">
-    <Project Path="src/Models/Models.csproj" Id="0bd8a871-8134-4723-8ee5-a7ad3741e70f" />
     <Project Path="src/Infrastructure/Infrastructure.csproj" Id="f7f264eb-ca39-48cd-8d14-abf6185cb4ea" />
+    <Project Path="src/Models/Models.csproj" Id="0bd8a871-8134-4723-8ee5-a7ad3741e70f" />
   </Folder>
   <Folder Name="/src/web/">
     <Project Path="src/web/Api.Features/api.features.csproj" Id="fe07252f-d7fd-4917-928a-10993a277470" />
@@ -30,6 +31,36 @@
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/bruno/" />
+  <Folder Name="/tests/bruno/dotnet-microservices/">
+    <File Path="test/bruno/dotnet-microservices/bruno.json" />
+  </Folder>
+  <Folder Name="/tests/bruno/dotnet-microservices/api/">
+    <File Path="test/bruno/dotnet-microservices/api/folder.bru" />
+  </Folder>
+  <Folder Name="/tests/bruno/dotnet-microservices/api/Auth/">
+    <File Path="test/bruno/dotnet-microservices/api/Auth/folder.bru" />
+    <File Path="test/bruno/dotnet-microservices/api/Auth/login.bru" />
+    <File Path="test/bruno/dotnet-microservices/api/Auth/refresh.bru" />
+  </Folder>
+  <Folder Name="/tests/bruno/dotnet-microservices/api/Health/">
+    <File Path="test/bruno/dotnet-microservices/api/health/folder.bru" />
+    <File Path="test/bruno/dotnet-microservices/api/health/live.bru" />
+    <File Path="test/bruno/dotnet-microservices/api/health/ready.bru" />
+    <File Path="test/bruno/dotnet-microservices/api/health/scalar.bru" />
+  </Folder>
+  <Folder Name="/tests/bruno/dotnet-microservices/api/Projects/">
+    <File Path="test/bruno/dotnet-microservices/api/Projects/folder.bru" />
+    <File Path="test/bruno/dotnet-microservices/api/Projects/Projects (Add).bru" />
+    <File Path="test/bruno/dotnet-microservices/api/Projects/Projects.bru" />
+  </Folder>
+  <Folder Name="/tests/bruno/dotnet-microservices/enviroments/">
+    <File Path="test/bruno/dotnet-microservices/environments/local.bru" />
+  </Folder>
+  <Folder Name="/tests/bruno/dotnet-microservices/project-subscriber/">
+    <File Path="test/bruno/dotnet-microservices/project-subscriber/folder.bru" />
+    <File Path="test/bruno/dotnet-microservices/project-subscriber/live.bru" />
+    <File Path="test/bruno/dotnet-microservices/project-subscriber/ready.bru" />
+  </Folder>
   <Folder Name="/tests/integration/">
     <Project Path="test/integration/Api.Features.Test.Integration/Api.Features.Test.Integration.csproj" Id="40a46d4d-0e80-4353-8c71-5e9f24f8cff4" />
   </Folder>
