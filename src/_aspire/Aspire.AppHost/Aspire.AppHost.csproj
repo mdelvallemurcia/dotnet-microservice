@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\web\Api\api.csproj" />
+    <ProjectReference Include="..\..\web\Api\Api.csproj" />
     <ProjectReference Include="..\..\worker\Product.Consumer\ProjectSubscriber.csproj" />
   </ItemGroup>
 
